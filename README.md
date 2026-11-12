@@ -1,4 +1,4 @@
-# bert-cuda
+# Bert-accelerator-CUDA
 
 This project runs the single-block BERT sentiment classifier from the CSEE 4868 System-on-Chip Platforms project (Columbia, Fall 2025) on an NVIDIA GPU with hand-written CUDA kernels. In the course project, the two feed-forward (FFN) layers ran on Catapult-HLS accelerators inside an ESP RISC-V SoC on a Xilinx VC707 FPGA. Here the whole model runs on the GPU, including those FFN layers in the project's own fixed-point format.
 
@@ -47,7 +47,7 @@ A single sentence gives FFN shapes of 32×512×128 and 32×128×512. They are to
 ## Findings in the course's reference model
 
 - **Uninitialized accumulators:** `BertMatrixVector_float` adds into output buffers that came from `malloc()` and were never cleared. On Linux, fresh pages happen to be zero. On macOS, the small pooler and classifier buffers start with garbage, and **every sentence is classified "Positive" (5/10)**. Zeroing the buffers restores 10/10. `cpu_ref.cpp` clears its accumulators.
-- **Saturation quirks:** `saturate()` only clips when |x| ≥ 2^WL, not 2^(WL−1). Negative overflow also saturates to **+**2^(WL−1), flipping the sign. `fixed_point.h` keeps both behaviors so results match the original model bit for bit.
+- **Saturation quirks:** `saturate()` only clips when |x| ≥ 2^WL, not 2^(WL−1). Negative overflow also saturates to a positive +2^(WL−1) instead of −2^(WL−1), flipping the sign. `fixed_point.h` keeps both behaviors so results match the original model bit for bit.
 
 ## Fixed-point precision vs. accuracy
 
