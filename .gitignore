@@ -1,0 +1,6 @@
+bin/
+results/
+# Model weights and sentences come from the course project; not redistributed here.
+data/
+*.nsys-rep
+*.ncu-rep
