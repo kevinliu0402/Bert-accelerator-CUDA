@@ -85,4 +85,49 @@ On Colab, run `scripts/package_for_colab.sh`, then open `notebooks/colab.ipynb` 
 
 ## Results
 
-*Fill this in from `results/` after running on a GPU.*
+These results come from an NVIDIA Tesla T4 on Google Colab (40 SMs, CUDA 12). The raw CSVs are in `docs/results-t4/`.
+
+### End-to-end inference (10 sentences, FP32 FFN)
+
+Every kernel classifies **10/10** sentences. The largest logit difference from the CPU reference is **1.8×10⁻⁶**.
+
+| GEMM | 1 sentence, eager | 1 sentence, CUDA graph | FFN layers only | 10-sentence batch | Sentences/s |
+|---|---|---|---|---|---|
+| naive | 123.5 µs | 111.5 µs | 43.9 µs | 424.1 µs | 23,600 |
+| tiled | 128.8 µs | 120.0 µs | 48.3 µs | 212.4 µs | 47,100 |
+| reg32 | 123.9 µs | 117.0 µs | 47.4 µs | 178.7 µs | 56,000 |
+| reg64 | 187.5 µs | 183.3 µs | 77.0 µs | 230.1 µs | 43,500 |
+| cuBLAS | 128.3 µs | 63.2 µs | 32.3 µs | 125.0 µs | 80,000 |
+
+With the FFN in 18-bit fixed point (`--fixed 18,16`), accuracy stays at **10/10** and the largest logit error is 8.9×10⁻⁵. The fixed-point FFN takes 393 µs, about 8× the FP32 version. Its kernel uses one thread per output and does every conversion in FP64, which runs at 1/32 of the FP32 rate on a T4.
+
+### GEMM throughput (`make bench`)
+
+| Shape | naive | tiled | reg32 | reg64 | cuBLAS |
+|---|---|---|---|---|---|
+| FFN1, 1 sentence (32×512×128) | 240 | 202 | 207 | 160 | 323 GFLOP/s |
+| FFN1, 64 sentences (2048×512×128) | 523 | 647 | 1,420 | **2,438 (97%)** | 2,505 |
+| FFN1, 256 sentences (8192×512×128) | 648 | 915 | 1,343 | **2,356 (87%)** | 2,706 |
+| FFN2, 1 sentence (32×128×512) | 183 | 79 | 81 | 57 | 307 |
+| FFN2, 256 sentences (8192×128×512) | 608 | 904 | 1,341 | **2,128 (71%)** | 2,978 |
+
+### What the numbers show
+
+- **Register blocking pays off once the GPU is full.**
+  - At 64 sentences, `reg64` is 4.7× faster than `naive` and reaches 97% of cuBLAS on FFN1.
+  - At 10 sentences, `reg32` runs the whole model 2.4× faster than `naive`.
+- **One sentence is too small to fill the GPU.**
+  - FFN2 for one sentence (N = 128) gives `tiled`/`reg32` only 4 blocks and `reg64` only 2, on 40 SMs. Those kernels reach just 19–26% of cuBLAS.
+  - `naive` uses smaller blocks, so it gets 16 of them and is the fastest custom kernel at this size.
+- **The Nsight Systems trace of a one-sentence pass (`reg32`) confirms this.**
+  - The seven GEMMs with 128 output columns (Q, K, V, dense, FFN2, pooler) each launch 4 blocks and average 14.9 µs.
+  - FFN1 launches 16 blocks and takes 10.0 µs.
+  - Attention takes 8.4 µs, and the 2-output classifier, which launches 1 block, takes 8.4 µs.
+- **CUDA graphs help cuBLAS far more than the custom kernels.**
+  - Graph replay halves cuBLAS's single-sentence latency (128 → 63 µs), because each cuBLAS call has host-side overhead.
+  - For the custom kernels it saves only 6–10%. Their time is spent on the GPU, not on launches.
+
+### Next optimizations
+
+- **Split-K or smaller tiles** for the N = 128, K = 512 layers at one sentence, so they launch more blocks than there are SMs.
+- **An integer-only fixed-point kernel** that quantizes the weights once, removing the per-element FP64 conversions.

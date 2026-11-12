@@ -1,0 +1,6 @@
+gpu,ffn_arith,gemm,correct,max_err,eager_us,graph_us,ffn_us,batch10_us
+"Tesla T4",fixed,naive,10,8.9258e-05,435.10,429.02,393.34,3221.42
+"Tesla T4",fixed,tiled,10,8.9258e-05,465.77,459.42,393.24,3219.01
+"Tesla T4",fixed,reg32,10,8.9258e-05,463.93,459.44,393.31,3209.59
+"Tesla T4",fixed,reg64,10,8.9258e-05,502.85,498.92,393.29,3252.14
+"Tesla T4",fixed,cublas,10,6.05285e-05,445.83,439.88,393.25,3193.87
