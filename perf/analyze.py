@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+"""results/perf/*.csv -> results/perf/SUMMARY.md + results/perf/plots/*.png
+
+Checks every prediction in perf/TEST_PLAN.md against measurement. Any input
+that is missing (for example ncu counters blocked) is reported as not measured.
+"""
+import argparse
+import glob
+import os
+import re
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Same palette as memory-hierarchy-bench (validated reference palette, light mode).
+C = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
+BLUES = ["#c6dbf5", "#7fb0ea", "#2a78d6", "#14417a"]
+INK, INK2, GRID, SURF = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
+plt.rcParams.update({
+    "figure.facecolor": SURF, "axes.facecolor": SURF, "axes.edgecolor": GRID,
+    "axes.labelcolor": INK2, "xtick.color": INK2, "ytick.color": INK2,
+    "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8,
+    "axes.spines.top": False, "axes.spines.right": False,
+    "font.size": 10, "legend.frameon": False, "lines.linewidth": 2,
+})
+
+ORDER = ["naive", "tiled", "reg32", "reg64", "reg64_pad0", "reg64_pad4",
+         "reg64_minb2", "reg64_minb3", "reg64_minb4", "cublas"]
+MAIN = ["naive", "tiled", "reg32", "reg64", "reg64_pad0", "reg64_pad4", "cublas"]
+N, K = 512, 128
+# Kernel geometry: K-slice per main-loop trip, warps per block, block tile.
+GEOM = {"tiled": (32, 32, 32, 32), "reg32": (32, 8, 32, 32)}
+for k in ORDER:
+    if k.startswith("reg64"):
+        GEOM[k] = (16, 8, 64, 64)
+# Shared-memory wavefronts per warp per k-tile predicted in TEST_PLAN P1b.
+P1B = {"reg64": 132, "reg64_pad0": 144, "reg64_pad4": 88}
+
+
+def sort_kernels(df, col="kernel"):
+    df = df.copy()
+    df["_o"] = df[col].map({k: i for i, k in enumerate(ORDER)}).fillna(99)
+    return df.sort_values("_o").drop(columns="_o")
+
+
+def num(x):
+    if isinstance(x, str):
+        x = x.replace(",", "").strip()
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
+UNIT_SCALE = {
+    "nsecond": 1e-9, "usecond": 1e-6, "msecond": 1e-3, "second": 1.0, "ns": 1e-9, "us": 1e-6, "ms": 1e-3,
+    "byte": 1.0, "kbyte": 1e3, "mbyte": 1e6, "gbyte": 1e9,
+    "hz": 1.0, "khz": 1e3, "mhz": 1e6, "ghz": 1e9,
+    "cycle/nsecond": 1e9, "cycle/usecond": 1e6, "cycle/msecond": 1e3, "cycle/second": 1.0,
+}
+
+
+def load_ncu(out):
+    """One row per ncu report: kernel, M, every metric as a float."""
+    rows = []
+    for path in sorted(glob.glob(os.path.join(out, "ncu", "*.csv"))):
+        m = re.match(r"(.+)_M(\d+)\.csv$", os.path.basename(path))
+        if not m:
+            continue
+        try:
+            raw = pd.read_csv(path, dtype=str)
+        except Exception:
+            continue
+        units = raw.iloc[0]  # second header line: ncu auto-scales units per report (us/ms, Mhz/Ghz, Kbyte/Mbyte)
+        raw = raw[raw.get("ID", pd.Series(dtype=str)).astype(str).str.match(r"^\d+$")] if "ID" in raw else raw.iloc[1:]
+        if raw.empty:
+            continue
+        r = raw.iloc[0]
+        row = {"kernel": m.group(1), "M": int(m.group(2)), "ncu_kernel_name": r.get("Kernel Name", "")}
+        for col in raw.columns:
+            if "__" in col:
+                # Convert to base units: seconds, bytes, Hz (per second).
+                row[col] = num(r[col]) * UNIT_SCALE.get(str(units[col]).strip().lower(), 1.0)
+        rows.append(row)
+    return pd.DataFrame(rows) if rows else None
+
+
+def pick(df, *names):
+    for n in names:
+        if n in df.columns:
+            return df[n]
+    return pd.Series([float("nan")] * len(df), index=df.index)
+
+
+def stall_table(nc):
+    """Warp stall reasons (cycles per issued instruction), whichever metric family ncu provides."""
+    pats = [r"smsp__average_warps_issue_stalled_(\w+?)_per_issue_active\.ratio",
+            r"smsp__average_warp_latency_issue_stalled_(\w+?)\.ratio",
+            r"smsp__warp_issue_stalled_(\w+?)_per_warp_active\.pct"]
+    for p in pats:
+        cols = {c: re.match(p, c).group(1) for c in nc.columns if re.match(p, c)}
+        if cols:
+            t = nc[["kernel", "M"] + list(cols)].rename(columns=cols)
+            return t
+    return None
+
+
+def fmt_md(df):
+    cols = list(df.columns)
+    lines = ["| " + " | ".join(f"M={c}" if isinstance(c, int) else str(c) for c in cols) + " |", "|" + "---|" * len(cols)]
+    for _, r in df.iterrows():
+        cells = []
+        for c in cols:
+            v = r[c]
+            if isinstance(v, float):
+                cells.append("" if pd.isna(v) else (f"{v:,.0f}" if abs(v) >= 1000 else f"{v:.3g}"))
+            else:
+                cells.append(str(v))
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default="results/perf")
+    a = ap.parse_args()
+    out = a.out
+    plots = os.path.join(out, "plots")
+    os.makedirs(plots, exist_ok=True)
+    md = ["# perf/ results (generated by perf/analyze.py)", ""]
+
+    sysinfo = os.path.join(out, "system.txt")
+    if os.path.exists(sysinfo):
+        md += ["```", open(sysinfo).read().strip(), "```", ""]
+
+    t = pd.read_csv(os.path.join(out, "timing.csv")) if os.path.exists(os.path.join(out, "timing.csv")) else None
+    s = pd.read_csv(os.path.join(out, "sass_summary.csv")) if os.path.exists(os.path.join(out, "sass_summary.csv")) else None
+    nc = load_ncu(out)
+
+    # ---- 1. Main table: compiler output + runtime at B=64 ------------------------------------------------
+    if t is not None:
+        d = t[(t.tag == "default") & (t.M == 2048)].copy()
+        cub = d.loc[d.kernel == "cublas", "us_median"]
+        d["pct_cublas"] = 100 * cub.iloc[0] / d.us_median if len(cub) else float("nan")
+        if s is not None:
+            sd = s[s.tag == "default"][["kernel", "loop_ffma", "loop_lds", "loop_lds128", "loop_sts", "loop_ffma_per_lds",
+                                         "ldl", "stl"]]
+            d = d.merge(sd, on="kernel", how="left")
+        d = sort_kernels(d)
+        cols = [c for c in ["kernel", "regs", "local_bytes", "static_smem", "blocks", "blocks_per_sm", "occupancy_pct",
+                            "waves", "us_median", "cv_pct", "gflops", "pct_cublas", "loop_ffma", "loop_lds",
+                            "loop_lds128", "loop_sts", "loop_ffma_per_lds", "max_rel_err"] if c in d]
+        md += ["## 1. Compiler output and runtime, FFN1 at 64 sentences (M=2048, N=512, K=128)", "",
+               "Loop columns are per main-loop trip (one k-tile) per thread, read from SASS.", "",
+               fmt_md(d[cols]), ""]
+        bad = d[d.max_rel_err > 1e-3]
+        md += [f"Correctness: {'all kernels within 1e-3' if bad.empty else 'FAIL: ' + ', '.join(bad.kernel)}. "
+               f"Max CV across reps: {d.cv_pct.max():.1f}%.", ""]
+        rr = t[(t.tag == "rerun") & (t.M == 2048)][["kernel", "us_median"]].rename(columns={"us_median": "rerun_us"})
+        if not rr.empty:
+            r2 = d[["kernel", "us_median"]].merge(rr, on="kernel")
+            r2["diff_pct"] = 100 * (r2.rerun_us - r2.us_median) / r2.us_median
+            md += ["Repeatability (full rerun): " + ", ".join(f"{k} {v:+.1f}%" for k, v in zip(r2.kernel, r2.diff_pct)), ""]
+
+        fig, ax = plt.subplots(figsize=(8, 3.6))
+        dm = d[d.kernel.isin(MAIN)]
+        ax.barh(dm.kernel, dm.gflops, color=[C[1] if k == "cublas" else C[0] for k in dm.kernel], height=0.6)
+        for y, (g, p) in enumerate(zip(dm.gflops, dm.pct_cublas)):
+            ax.text(g, y, f"  {g:,.0f} ({p:.0f}%)", va="center", color=INK2, fontsize=9)
+        ax.invert_yaxis()
+        ax.set_xlabel("GFLOP/s (label: % of cuBLAS)")
+        ax.set_title("FFN1 GEMM, 64 sentences", loc="left", color=INK)
+        ax.set_xlim(0, dm.gflops.max() * 1.25)
+        fig.tight_layout()
+        fig.savefig(os.path.join(plots, "gflops_b64.png"), dpi=150)
+        plt.close(fig)
+
+        other = t[(t.tag == "default") & (t.M != 2048) & t.kernel.isin(MAIN)]
+        if not other.empty:
+            pv = other.pivot_table(index="kernel", columns="M", values="us_median")
+            pv = pv.reindex([k for k in ORDER if k in pv.index])
+            md += ["### Other sizes (µs, median)", "", "M=32 is one sentence; M=8192 is 256 sentences.", "",
+                   fmt_md(pv.reset_index()), ""]
+
+    # ---- 2. P2: static SASS x trip count vs dynamic counters ---------------------------------------------
+    md += ["## 2. P2: does the SASS predict the counters? (static count x trips x warps vs ncu)", ""]
+    if s is not None and nc is not None and not nc.empty:
+        rows = []
+        n64 = nc[nc.M == 2048]
+        for _, r in n64.iterrows():
+            k = r.kernel
+            if k not in GEOM:
+                continue
+            ss = s[(s.tag == "default") & (s.kernel == k)]
+            if ss.empty:
+                continue
+            ss = ss.iloc[0]
+            bk, warps, bm, bn = GEOM[k]
+            blocks, trips = (2048 // bm) * (N // bn), K // bk
+            pf = ss.loop_ffma * trips * blocks * warps * 32
+            pl = ss.loop_lds * trips * blocks * warps
+            pst = ss.loop_sts * trips * blocks * warps
+            mf = r.get("smsp__sass_thread_inst_executed_op_ffma_pred_on.sum", float("nan"))
+            ml = r.get("smsp__inst_executed_op_shared_ld.sum", float("nan"))
+            mst = r.get("smsp__inst_executed_op_shared_st.sum", float("nan"))
+            wf = (r.get("l1tex__data_pipe_lsu_wavefronts_mem_shared_op_ld.sum", float("nan"))
+                  + r.get("l1tex__data_pipe_lsu_wavefronts_mem_shared_op_st.sum", float("nan")))
+            rows.append({"kernel": k, "FFMA pred": pf, "FFMA meas": mf, "LDS pred": pl, "LDS meas": ml,
+                         "STS pred": pst, "STS meas": mst,
+                         "ld bank conflicts": r.get("l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum", float("nan")),
+                         "st bank conflicts": r.get("l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum", float("nan")),
+                         "wavefronts/warp/ktile meas": wf / (blocks * warps * trips),
+                         "wavefronts/warp/ktile P1b": P1B.get(k, float("nan"))})
+        if rows:
+            p2 = sort_kernels(pd.DataFrame(rows))
+            md += [f"M·N·K = {2048 * N * K:,} (every kernel should execute exactly this many thread FFMAs).", "",
+                   fmt_md(p2), ""]
+            fig, ax = plt.subplots(figsize=(5.2, 4.4))
+            for i, (pc, mc, lab) in enumerate([("FFMA pred", "FFMA meas", "FFMA (thread)"),
+                                               ("LDS pred", "LDS meas", "LDS (warp)"),
+                                               ("STS pred", "STS meas", "STS (warp)")]):
+                ax.scatter(p2[pc], p2[mc], s=60, color=C[i], label=lab, edgecolor=SURF, linewidth=2, zorder=3)
+            lo = min(p2[["LDS pred", "STS pred"]].min().min(), 1e4)
+            hi = p2["FFMA pred"].max() * 2
+            ax.plot([lo, hi], [lo, hi], color=INK2, linewidth=1, linestyle="--", zorder=1)
+            ax.set_xscale("log"); ax.set_yscale("log")
+            ax.set_xlabel("Predicted from SASS (static × trips × warps)")
+            ax.set_ylabel("Measured by Nsight Compute")
+            ax.set_title("Static SASS predicts dynamic counts", loc="left", color=INK)
+            ax.legend(loc="upper left")
+            fig.tight_layout()
+            fig.savefig(os.path.join(plots, "sass_vs_counters.png"), dpi=150)
+            plt.close(fig)
+    else:
+        md += ["Not measured (no ncu counters or no SASS summary).", ""]
+
+    # ---- 3. P1/P4: utilization, clock, memory ------------------------------------------------------------
+    md += ["## 3. P1c/P4: execution-unit utilization, clock and memory (ncu)", ""]
+    if nc is not None and not nc.empty:
+        u = pd.DataFrame({
+            "kernel": nc.kernel, "M": nc.M, "ncu name": nc.ncu_kernel_name.astype(str).str.slice(0, 40),
+            "time us": pick(nc, "gpu__time_duration.sum") * 1e6,
+            "SM GHz": pick(nc, "sm__cycles_elapsed.avg.per_second") / 1e9,
+            "regs": pick(nc, "launch__registers_per_thread"),
+            "occ theor %": pick(nc, "sm__maximum_warps_per_active_cycle_pct"),
+            "occ achieved %": pick(nc, "sm__warps_active.avg.pct_of_peak_sustained_active"),
+            "FMA pipe %": pick(nc, "sm__pipe_fma_cycles_active.avg.pct_of_peak_sustained_active"),
+            "LSU %": pick(nc, "sm__inst_executed_pipe_lsu.avg.pct_of_peak_sustained_active"),
+            "SOL SM %": pick(nc, "sm__throughput.avg.pct_of_peak_sustained_elapsed"),
+            "SOL mem %": pick(nc, "gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed"),
+            "DRAM rd MB": pick(nc, "dram__bytes_read.sum") / 1e6,
+            "DRAM wr MB": pick(nc, "dram__bytes_write.sum") / 1e6,
+            "L2 hit %": pick(nc, "lts__t_sector_hit_rate.pct"),
+        })
+        u = sort_kernels(u).sort_values("M", ascending=False, kind="stable")
+        md += [fmt_md(u), ""]
+        u64 = u[(u.M == 2048) & u.kernel.isin(MAIN)]
+        if u64["FMA pipe %"].notna().any():
+            fig, ax = plt.subplots(figsize=(7.5, 3.4))
+            x = range(len(u64))
+            ax.bar([i - 0.2 for i in x], u64["FMA pipe %"], width=0.4, color=C[0], label="FMA pipe busy %")
+            ax.bar([i + 0.2 for i in x], u64["LSU %"], width=0.4, color=C[1], label="LSU pipe busy %")
+            ax.set_xticks(list(x)); ax.set_xticklabels(u64.kernel, rotation=20)
+            ax.set_ylabel("% of peak (active cycles)")
+            ax.set_title("Which execution unit is busy? (M=2048)", loc="left", color=INK)
+            ax.legend(loc="upper left")
+            fig.tight_layout()
+            fig.savefig(os.path.join(plots, "pipe_utilization.png"), dpi=150)
+            plt.close(fig)
+
+        st = stall_table(nc)
+        if st is not None:
+            st64 = sort_kernels(st[(st.M == 2048) & st.kernel.isin(MAIN)]).set_index("kernel").drop(columns="M")
+            st64 = st64.loc[:, st64.max() > 0.05]
+            top = st64.sum().sort_values(ascending=False).index[:6]
+            md += ["## 4. P5: warp stall reasons, M=2048 (cycles per issued instruction; top 6)", "",
+                   fmt_md(st64[top].reset_index()), ""]
+            fig, ax = plt.subplots(figsize=(7.5, 3.6))
+            left = [0] * len(st64)
+            palette = C + ["#9b9a96", "#c9c8c4"]
+            for i, reason in enumerate(top):
+                vals = st64[reason].tolist()
+                ax.barh(st64.index, vals, left=left, color=palette[i % len(palette)], label=reason,
+                        edgecolor=SURF, linewidth=2, height=0.6)
+                left = [l + v for l, v in zip(left, vals)]
+            ax.invert_yaxis()
+            ax.set_xlabel("Stall cycles per issued instruction")
+            ax.set_title("Why warps wait (M=2048)", loc="left", color=INK)
+            ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
+            fig.tight_layout()
+            fig.savefig(os.path.join(plots, "stall_reasons.png"), dpi=150, bbox_inches="tight")
+            plt.close(fig)
+            st1 = st[st.M == 32].set_index("kernel").drop(columns="M")
+            if not st1.empty:
+                top1 = st1.sum().sort_values(ascending=False).index[:4]
+                md += ["Stall reasons at M=32 (one sentence):", "", fmt_md(st1[top1].reset_index()), ""]
+    else:
+        md += ["Not measured: Nsight Compute could not read counters on this machine.", ""]
+
+    # ---- 5. P3: register budget ---------------------------------------------------------------------------
+    rs_path = os.path.join(out, "regsweep.csv")
+    if os.path.exists(rs_path):
+        rs = pd.read_csv(rs_path)
+        md += ["## 5. P3: register budget -> spills, occupancy, time", "",
+               "`rNN` = built with `-maxrregcount=NN` and no `__launch_bounds__`. "
+               "`lb_r32` = `-maxrregcount=32` with `__launch_bounds__` kept (does the flag still apply?).", "",
+               fmt_md(rs[["tag", "kernel", "M", "regs", "local_bytes", "blocks_per_sm", "occupancy_pct", "waves",
+                          "us_median", "gflops"]]), ""]
+        if t is not None:
+            mb = sort_kernels(t[(t.tag == "default") & t.kernel.str.startswith("reg64") & ~t.kernel.str.contains("pad")])
+            md += ["Same kernel with `__launch_bounds__(256, MINB)`:", "",
+                   fmt_md(mb[["kernel", "M", "regs", "local_bytes", "blocks_per_sm", "occupancy_pct", "waves",
+                              "us_median"]]), ""]
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4.0), sharey=False)
+        for ax, M in zip(axes, [2048, 8192]):
+            for i, k in enumerate(["reg64", "reg64_pad4"]):
+                q = rs[(rs.kernel == k) & (rs.M == M) & rs.tag.str.match(r"^r\d+$")].sort_values("regs")
+                if q.empty:
+                    continue
+                ax.plot(q.regs, q.us_median, marker="o", color=C[i], label=k, markersize=7,
+                        markeredgecolor=SURF, markeredgewidth=2)
+                sp = q[q.local_bytes > 0]
+                ax.scatter(sp.regs, sp.us_median, s=140, facecolors="none", edgecolors=INK2, linewidths=1.2,
+                           zorder=4, label="spills to local memory" if i == 0 else None)
+            ax.axvspan(30, 64.5, color=GRID, alpha=0.35, zorder=0)
+            ax.text(0.02, 1.0, "≤64 regs: 4 blocks/SM (100%)", fontsize=8, color=INK2, transform=ax.transAxes, va="top")
+            ax.text(0.98, 1.0, ">64: 3 blocks (75%)", fontsize=8, color=INK2, transform=ax.transAxes, va="top", ha="right")
+            ax.set_ylim(0, ax.get_ylim()[1] * 1.12)
+            ax.set_xlabel("Registers per thread (compiler result)")
+            ax.set_ylabel("µs (median)")
+            ax.set_title(f"-maxrregcount sweep, M={M}", loc="left", color=INK, pad=14)
+            ax.legend(loc="lower right", fontsize=8)
+        fig.tight_layout()
+        fig.savefig(os.path.join(plots, "register_sweep.png"), dpi=150)
+        plt.close(fig)
+
+    # ---- static SASS overview -----------------------------------------------------------------------------
+    if s is not None:
+        sv = sort_kernels(s[s.tag == "default"])
+        md += ["## 6. Static SASS per kernel (default build)", "",
+               fmt_md(sv[["kernel", "total", "ffma", "lds", "lds128", "sts", "ldg", "stg", "bar", "ldl", "stl",
+                          "loop_total", "loop_ffma", "loop_lds", "loop_lds128", "loop_ffma_per_lds"]]), "",
+               "Main-loop listings: `results/perf/sass_loops/`.", ""]
+
+    md += ["## Plots", ""] + [f"![{os.path.splitext(p)[0]}](plots/{p})" for p in sorted(os.listdir(plots))]
+    with open(os.path.join(out, "SUMMARY.md"), "w") as f:
+        f.write("\n".join(md) + "\n")
+    print(f"wrote {out}/SUMMARY.md and {len(os.listdir(plots))} plots")
+
+
+if __name__ == "__main__":
+    main()

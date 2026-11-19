@@ -1,0 +1,85 @@
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi4EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi3EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi2EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi4ELi1EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi0ELi1EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi1EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert20gemm_regblock_kernelILi32ELi32ELi32ELi2ELi2ELi1ELi1EEEvPKfS2_S2_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert18gather_rows_kernelEPKfPfii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert10add_kernelEPKfS1_Pfi' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert16attention_kernelEPKfS1_S1_PfiiiPKi' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert17gemm_fixed_kernelEPKfS1_S1_PfiiiNS_10FixedLayerEi' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert15bias_act_kernelEPfPKfiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert17gemm_tiled_kernelEPKfS1_S1_Pfiiii' with  48 of maxrregcount option
+ptxas info    : Overriding maximum register limit 256 for '_ZN4bert17gemm_naive_kernelEPKfS1_S1_Pfiiii' with  48 of maxrregcount option
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi4EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi4EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8256 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 92.319 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi3EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi3EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8256 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 84.273 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi2EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi2EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8256 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 90.192 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi4ELi1EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi4ELi1EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8448 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 95.888 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi0ELi1EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi0ELi1EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8192 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 77.726 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi1EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi64ELi64ELi16ELi4ELi4ELi1ELi1EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8256 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 79.729 ms
+ptxas info    : Compiling entry function '_ZN4bert20gemm_regblock_kernelILi32ELi32ELi32ELi2ELi2ELi1ELi1EEEvPKfS2_S2_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert20gemm_regblock_kernelILi32ELi32ELi32ELi2ELi2ELi1ELi1EEEvPKfS2_S2_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 8320 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 34.939 ms
+ptxas info    : Compiling entry function '_ZN4bert18gather_rows_kernelEPKfPfii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert18gather_rows_kernelEPKfPfii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 18 registers, used 0 barriers, 376 bytes cmem[0]
+ptxas info    : Compile time = 1.820 ms
+ptxas info    : Compiling entry function '_ZN4bert10add_kernelEPKfS1_Pfi' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert10add_kernelEPKfS1_Pfi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 12 registers, used 0 barriers, 380 bytes cmem[0]
+ptxas info    : Compile time = 1.113 ms
+ptxas info    : Compiling entry function '_ZN4bert16attention_kernelEPKfS1_S1_PfiiiPKi' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert16attention_kernelEPKfS1_S1_PfiiiPKi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 1 barriers, 16 bytes smem, 408 bytes cmem[0]
+ptxas info    : Compile time = 32.303 ms
+ptxas info    : Compiling entry function '_ZN4bert17gemm_fixed_kernelEPKfS1_S1_PfiiiNS_10FixedLayerEi' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert17gemm_fixed_kernelEPKfS1_S1_PfiiiNS_10FixedLayerEi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 42 registers, used 0 barriers, 420 bytes cmem[0]
+ptxas info    : Compile time = 35.157 ms
+ptxas info    : Compiling entry function '_ZN4bert15bias_act_kernelEPfPKfiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert15bias_act_kernelEPfPKfiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 14 registers, used 0 barriers, 380 bytes cmem[0]
+ptxas info    : Compile time = 3.900 ms
+ptxas info    : Compiling entry function '_ZN4bert17gemm_tiled_kernelEPKfS1_S1_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert17gemm_tiled_kernelEPKfS1_S1_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 42 registers, used 1 barriers, 8320 bytes smem, 400 bytes cmem[0]
+ptxas info    : Compile time = 9.868 ms
+ptxas info    : Compiling entry function '_ZN4bert17gemm_naive_kernelEPKfS1_S1_Pfiiii' for 'sm_75'
+ptxas info    : Function properties for _ZN4bert17gemm_naive_kernelEPKfS1_S1_Pfiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, used 0 barriers, 400 bytes cmem[0]
+ptxas info    : Compile time = 12.603 ms

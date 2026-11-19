@@ -1,0 +1,102 @@
+// bert::gemm_tiled_kernel(float const*, float const*, float const*, float*, int, int, int, int)
+// main loop: 100 instructions, 32 FFMA, 40 LDS (8 x .128), 2 STS, 2 LDG, 2 BAR, 0 LDL / 0 STL
+/*01a0*/  IADD3 R11, R22, R27.reuse, RZ
+/*01b0*/  IADD3 R4, R0, R27, RZ
+/*01c0*/  ISETP.GE.AND P1, PT, R11, c[0x0][0x188], PT
+/*01d0*/  ISETP.GE.AND P2, PT, R4, c[0x0][0x188], PT
+/*01e0*/  ISETP.GE.OR P1, PT, R2, c[0x0][0x184], P1
+/*01f0*/  ISETP.GE.OR P2, PT, R23, c[0x0][0x180], P2
+/*0200*/  MOV R15, RZ
+/*0210*/  MOV R29, RZ
+/*0220*/  @!P1 SHF.R.S32.HI R4, RZ, 0x1f, R11
+/*0230*/  @!P1 IMAD.WIDE.U32 R8, R11, c[0x0][0x184], R2
+/*0240*/  @!P2 IADD3 R5, P3, R20, R27, RZ
+/*0250*/  @!P1 IMAD R4, R4, c[0x0][0x184], RZ
+/*0260*/  @!P2 LEA.HI.X.SX32 R6, R27, R21, 0x1, P3
+/*0270*/  @!P1 LEA R12, P4, R8, c[0x0][0x168], 0x2
+/*0280*/  @!P1 IMAD R11, R11, UR4, R4
+/*0290*/  @!P2 LEA R4, P3, R5, c[0x0][0x160], 0x2
+/*02a0*/  @!P1 IADD3 R9, R9, R11, RZ
+/*02b0*/  @!P2 LEA.HI.X R5, R5, c[0x0][0x164], R6, 0x2, P3
+/*02c0*/  @!P1 LEA.HI.X R13, R8, c[0x0][0x16c], R9, 0x2, P4
+/*02d0*/  @!P2 LDG.E.CONSTANT.SYS R15, [R4]
+/*02e0*/  @!P1 LDG.E.CONSTANT.SYS R29, [R12]
+/*02f0*/  IADD3 R27, R27, 0x20, RZ
+/*0300*/  ISETP.GE.AND P1, PT, R27, c[0x0][0x188], PT
+/*0310*/  STS [R24], R15
+/*0320*/  STS [R26], R29
+/*0330*/  BAR.SYNC 0x0
+/*0340*/  LDS.U R6, [R0.X4+0x1000]
+/*0350*/  LDS.U.128 R8, [R25]
+/*0360*/  LDS.U R28, [R0.X4+0x1084]
+/*0370*/  LDS.U R33, [R0.X4+0x1108]
+/*0380*/  LDS.U R34, [R0.X4+0x118c]
+/*0390*/  LDS.U R35, [R0.X4+0x1210]
+/*03a0*/  LDS.U.128 R16, [R25+0x10]
+/*03b0*/  LDS.U R36, [R0.X4+0x1294]
+/*03c0*/  LDS.U R37, [R0.X4+0x1318]
+/*03d0*/  LDS.U R32, [R0.X4+0x139c]
+/*03e0*/  FFMA R6, R6, R8, R7
+/*03f0*/  LDS.U R29, [R0.X4+0x1420]
+/*0400*/  LDS.U.128 R12, [R25+0x20]
+/*0410*/  FFMA R9, R28, R9, R6
+/*0420*/  FFMA R10, R33, R10, R9
+/*0430*/  LDS.U R30, [R0.X4+0x14a4]
+/*0440*/  FFMA R11, R34, R11, R10
+/*0450*/  LDS.U R31, [R0.X4+0x1528]
+/*0460*/  LDS.U R28, [R0.X4+0x15ac]
+/*0470*/  FFMA R16, R35, R16, R11
+/*0480*/  LDS.U R33, [R0.X4+0x1630]
+/*0490*/  LDS.U.128 R4, [R25+0x30]
+/*04a0*/  FFMA R17, R36, R17, R16
+/*04b0*/  FFMA R17, R37, R18, R17
+/*04c0*/  LDS.U R34, [R0.X4+0x16b4]
+/*04d0*/  FFMA R17, R32, R19, R17
+/*04e0*/  LDS.U R35, [R0.X4+0x1738]
+/*04f0*/  LDS.U R36, [R0.X4+0x17bc]
+/*0500*/  FFMA R12, R29, R12, R17
+/*0510*/  LDS.U R37, [R0.X4+0x1840]
+/*0520*/  LDS.U.128 R8, [R25+0x40]
+/*0530*/  FFMA R12, R30, R13, R12
+/*0540*/  FFMA R12, R31, R14, R12
+/*0550*/  LDS.U R32, [R0.X4+0x18c4]
+/*0560*/  FFMA R12, R28, R15, R12
+/*0570*/  LDS.U R29, [R0.X4+0x1948]
+/*0580*/  LDS.U R30, [R0.X4+0x19cc]
+/*0590*/  FFMA R4, R33, R4, R12
+/*05a0*/  LDS.U R31, [R0.X4+0x1a50]
+/*05b0*/  LDS.U.128 R16, [R25+0x50]
+/*05c0*/  FFMA R4, R34, R5, R4
+/*05d0*/  FFMA R4, R35, R6, R4
+/*05e0*/  LDS.U R28, [R0.X4+0x1ad4]
+/*05f0*/  FFMA R4, R36, R7, R4
+/*0600*/  LDS.U R33, [R0.X4+0x1b58]
+/*0610*/  LDS.U R34, [R0.X4+0x1bdc]
+/*0620*/  FFMA R4, R37, R8, R4
+/*0630*/  LDS.U R35, [R0.X4+0x1c60]
+/*0640*/  LDS.U.128 R12, [R25+0x60]
+/*0650*/  FFMA R4, R32, R9, R4
+/*0660*/  FFMA R10, R29, R10, R4
+/*0670*/  LDS.U R36, [R0.X4+0x1ce4]
+/*0680*/  FFMA R10, R30, R11, R10
+/*0690*/  LDS.U R8, [R0.X4+0x1d68]
+/*06a0*/  LDS.U R9, [R0.X4+0x1dec]
+/*06b0*/  FFMA R10, R31, R16, R10
+/*06c0*/  LDS.U R29, [R0.X4+0x1e70]
+/*06d0*/  LDS.U.128 R4, [R25+0x70]
+/*06e0*/  FFMA R10, R28, R17, R10
+/*06f0*/  FFMA R10, R33, R18, R10
+/*0700*/  LDS.U R11, [R0.X4+0x1ef4]
+/*0710*/  FFMA R10, R34, R19, R10
+/*0720*/  LDS.U R16, [R0.X4+0x1f78]
+/*0730*/  LDS.U R17, [R0.X4+0x1ffc]
+/*0740*/  FFMA R10, R35, R12, R10
+/*0750*/  FFMA R13, R36, R13, R10
+/*0760*/  FFMA R8, R8, R14, R13
+/*0770*/  FFMA R9, R9, R15, R8
+/*0780*/  FFMA R4, R29, R4, R9
+/*0790*/  FFMA R5, R11, R5, R4
+/*07a0*/  FFMA R6, R16, R6, R5
+/*07b0*/  FFMA R7, R17, R7, R6
+/*07c0*/  BAR.SYNC 0x0
+/*07d0*/  @!P1 BRA 0x1a0

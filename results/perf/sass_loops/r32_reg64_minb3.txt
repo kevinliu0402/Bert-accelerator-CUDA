@@ -1,0 +1,704 @@
+// void bert::gemm_regblock_kernel<64, 64, 16, 4, 4, 1, 3>(float const*, float const*, float const*, float*, int, int, int, int)
+// main loop: 702 instructions, 256 FFMA, 92 LDS (12 x .128), 14 STS, 14 LDG, 2 BAR, 9 LDL / 5 STL
+/*0420*/  S2R R20, SR_TID.X
+/*0430*/  BMOV.32.CLEAR RZ, B1
+/*0440*/  BSSY B1, 0x18f0
+/*0450*/  ISETP.GT.AND P0, PT, R20, 0x3ff, PT
+/*0460*/  @P0 BRA 0x18e0
+/*0470*/  S2R R17, SR_TID.X
+/*0480*/  BMOV.32.CLEAR RZ, B0
+/*0490*/  BSSY B0, 0x930
+/*04a0*/  IMNMX R9, R17.reuse, 0x300, !PT
+/*04b0*/  MOV R6, R17
+/*04c0*/  IADD3 R9, -R17, 0xff, R9
+/*04d0*/  LEA.HI R15, R9, 0x1, RZ, 0x18
+/*04e0*/  LOP3.LUT P0, RZ, R15, 0x3, RZ, 0xc0, !PT
+/*04f0*/  @!P0 BRA 0x920
+/*0500*/  S2R R14, SR_CTAID.Y
+/*0510*/  IMAD.IADD R10, R2, 0x1, R3
+/*0520*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0530*/  LEA R6, R14, R0, 0x6
+/*0540*/  ISETP.GE.OR P0, PT, R6, c[0x0][0x180], P0
+/*0550*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0560*/  @!P0 IMAD.WIDE R10, R6, c[0x0][0x188], R10
+/*0570*/  MOV R6, RZ
+/*0580*/  @!P0 LEA R12, P1, R10, c[0x0][0x160], 0x2
+/*0590*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P1
+/*05a0*/  @!P0 LDG.E.CONSTANT.SYS R6, [R12]
+/*05b0*/  LOP3.LUT R15, R15, 0x3, RZ, 0xc0, !PT
+/*05c0*/  IMAD R10, R2, 0x41, R0
+/*05d0*/  ISETP.NE.AND P0, PT, R15, 0x1, PT
+/*05e0*/  STS [R10.X4], R6
+/*05f0*/  IADD3 R6, R17, 0x100, RZ
+/*0600*/  @!P0 BRA 0x920
+/*0610*/  S2R R21, SR_TID.X
+/*0620*/  IADD3 R23, R21.reuse, 0x100, RZ
+/*0630*/  IADD3 R22, R21, 0x100, RZ
+/*0640*/  LDL R21, [R1+0x20]
+/*0650*/  SHF.R.S32.HI R22, RZ, 0x1f, R22
+/*0660*/  LEA.HI R22, R22, R23, RZ, 0x4
+/*0670*/  SHF.R.S32.HI R22, RZ, 0x4, R22
+/*0680*/  LEA R6, R14, R22, 0x6
+/*0690*/  BMOV.32.CLEAR RZ, B2
+/*06a0*/  BSSY B2, 0x760
+/*06b0*/  MOV R12, RZ
+/*06c0*/  IADD3 R10, R21, R3, RZ
+/*06d0*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*06e0*/  ISETP.GE.OR P0, PT, R6, c[0x0][0x180], P0
+/*06f0*/  @P0 BRA 0x750
+/*0700*/  SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0710*/  IMAD.WIDE R10, R6, c[0x0][0x188], R10
+/*0720*/  LEA R12, P0, R10, c[0x0][0x160], 0x2
+/*0730*/  LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P0
+/*0740*/  LDG.E.CONSTANT.SYS R12, [R12]
+/*0750*/  BSYNC B2
+/*0760*/  ISETP.NE.AND P0, PT, R15, 0x2, PT
+/*0770*/  IMAD R6, R21, 0x41, R22
+/*0780*/  STS [R6.X4], R12
+/*0790*/  IADD3 R6, R17, 0x200, RZ
+/*07a0*/  @!P0 BRA 0x920
+/*07b0*/  IADD3 R22, R20.reuse, 0x200, RZ
+/*07c0*/  IADD3 R21, R20, 0x200, RZ
+/*07d0*/  LDL R20, [R1+0x18]
+/*07e0*/  SHF.R.S32.HI R21, RZ, 0x1f, R21
+/*07f0*/  LEA.HI R21, R21, R22, RZ, 0x4
+/*0800*/  SHF.R.S32.HI R21, RZ, 0x4, R21
+/*0810*/  LEA R14, R14, R21, 0x6
+/*0820*/  BMOV.32.CLEAR RZ, B2
+/*0830*/  BSSY B2, 0x8f0
+/*0840*/  MOV R12, RZ
+/*0850*/  IADD3 R10, R20, R3, RZ
+/*0860*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0870*/  ISETP.GE.OR P0, PT, R14, c[0x0][0x180], P0
+/*0880*/  @P0 BRA 0x8e0
+/*0890*/  SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*08a0*/  IMAD.WIDE R10, R14, c[0x0][0x188], R10
+/*08b0*/  LEA R12, P0, R10, c[0x0][0x160], 0x2
+/*08c0*/  LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P0
+/*08d0*/  LDG.E.CONSTANT.SYS R12, [R12]
+/*08e0*/  BSYNC B2
+/*08f0*/  IMAD R6, R20, 0x41, R21
+/*0900*/  STS [R6.X4], R12
+/*0910*/  IADD3 R6, R17, 0x300, RZ
+/*0920*/  BSYNC B0
+/*0930*/  ISETP.GE.U32.AND P0, PT, R9, 0x300, PT
+/*0940*/  BMOV.32.CLEAR RZ, B0
+/*0950*/  BSSY B0, 0xe60
+/*0960*/  @!P0 BRA 0xe50
+/*0970*/  S2UR UR4, SR_CTAID.Y
+/*0980*/  S2R R17, SR_CTAID.Y
+/*0990*/  MOV R9, UR4
+/*09a0*/  SHF.R.S32.HI R15, RZ, 0x1f, R6
+/*09b0*/  LEA.HI R15, R15, R6, RZ, 0x4
+/*09c0*/  LOP3.LUT R14, R15, 0xfffffff0, RZ, 0xc0, !PT
+/*09d0*/  SHF.R.S32.HI R15, RZ, 0x4, R15
+/*09e0*/  IMAD.IADD R14, R6, 0x1, -R14
+/*09f0*/  LEA R9, R9, R15, 0x6
+/*0a00*/  IADD3 R10, R14, R3, RZ
+/*0a10*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0a20*/  ISETP.GE.OR P0, PT, R9, c[0x0][0x180], P0
+/*0a30*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0a40*/  @!P0 IMAD.WIDE R10, R9, c[0x0][0x188], R10
+/*0a50*/  MOV R9, RZ
+/*0a60*/  @!P0 LEA R12, P1, R10, c[0x0][0x160], 0x2
+/*0a70*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P1
+/*0a80*/  @!P0 LDG.E.CONSTANT.SYS R9, [R12]
+/*0a90*/  IADD3 R10, R6, 0x100, RZ
+/*0aa0*/  IMAD R15, R14, 0x41, R15
+/*0ab0*/  SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0ac0*/  LEA.HI R11, R11, R10, RZ, 0x4
+/*0ad0*/  LOP3.LUT R14, R11, 0xfffffff0, RZ, 0xc0, !PT
+/*0ae0*/  IADD3 R14, R10, -R14, RZ
+/*0af0*/  IADD3 R10, R14, R3, RZ
+/*0b00*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0b10*/  STS [R15.X4], R9
+/*0b20*/  SHF.R.S32.HI R15, RZ, 0x4, R11
+/*0b30*/  MOV R9, R17
+/*0b40*/  LEA R12, R9, R15, 0x6
+/*0b50*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x180], P0
+/*0b60*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0b70*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x188], R10
+/*0b80*/  @!P0 LEA R12, P1, R10, c[0x0][0x160], 0x2
+/*0b90*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P1
+/*0ba0*/  MOV R10, RZ
+/*0bb0*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*0bc0*/  IMAD R15, R14, 0x41, R15
+/*0bd0*/  IADD3 R12, R6, 0x200, RZ
+/*0be0*/  SHF.R.S32.HI R11, RZ, 0x1f, R12
+/*0bf0*/  LEA.HI R11, R11, R12, RZ, 0x4
+/*0c00*/  LOP3.LUT R14, R11, 0xfffffff0, RZ, 0xc0, !PT
+/*0c10*/  IADD3 R14, R12, -R14, RZ
+/*0c20*/  STS [R15.X4], R10
+/*0c30*/  IMAD.IADD R10, R14, 0x1, R3
+/*0c40*/  SHF.R.S32.HI R15, RZ, 0x4, R11
+/*0c50*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0c60*/  LEA R12, R9, R15, 0x6
+/*0c70*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x180], P0
+/*0c80*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0c90*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x188], R10
+/*0ca0*/  @!P0 LEA R12, P1, R10, c[0x0][0x160], 0x2
+/*0cb0*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P1
+/*0cc0*/  MOV R10, RZ
+/*0cd0*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*0ce0*/  IMAD R15, R14, 0x41, R15
+/*0cf0*/  IADD3 R12, R6, 0x300, RZ
+/*0d00*/  SHF.R.S32.HI R11, RZ, 0x1f, R12
+/*0d10*/  LEA.HI R11, R11, R12, RZ, 0x4
+/*0d20*/  LOP3.LUT R14, R11, 0xfffffff0, RZ, 0xc0, !PT
+/*0d30*/  IADD3 R14, R12, -R14, RZ
+/*0d40*/  STS [R15.X4], R10
+/*0d50*/  IADD3 R10, R14, R3, RZ
+/*0d60*/  SHF.R.S32.HI R15, RZ, 0x4, R11
+/*0d70*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x188], PT
+/*0d80*/  LEA R12, R9, R15, 0x6
+/*0d90*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x180], P0
+/*0da0*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0db0*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x188], R10
+/*0dc0*/  @!P0 LEA R12, P1, R10, c[0x0][0x160], 0x2
+/*0dd0*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x164], R11, 0x2, P1
+/*0de0*/  MOV R10, RZ
+/*0df0*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*0e00*/  IMAD R14, R14, 0x41, R15
+/*0e10*/  ISETP.GE.AND P0, PT, R6.reuse, RZ, PT
+/*0e20*/  IADD3 R6, R6, 0x400, RZ
+/*0e30*/  STS [R14.X4], R10
+/*0e40*/  @!P0 BRA 0x9a0
+/*0e50*/  BSYNC B0
+/*0e60*/  S2R R20, SR_TID.X
+/*0e70*/  BMOV.32.CLEAR RZ, B0
+/*0e80*/  BSSY B0, 0x13a0
+/*0e90*/  IMNMX R9, R20, 0x300, !PT
+/*0ea0*/  MOV R6, R20
+/*0eb0*/  IADD3 R9, -R20, 0xff, R9
+/*0ec0*/  LEA.HI R14, R9, 0x1, RZ, 0x18
+/*0ed0*/  LOP3.LUT P0, RZ, R14, 0x3, RZ, 0xc0, !PT
+/*0ee0*/  @!P0 BRA 0x1390
+/*0ef0*/  S2R R10, SR_TID.X
+/*0f00*/  S2R R15, SR_CTAID.X
+/*0f10*/  SHF.R.S32.HI R21, RZ, 0x1f, R10.reuse
+/*0f20*/  SHF.R.S32.HI R22, RZ, 0x1f, R10
+/*0f30*/  LEA.HI R21, R21, R10.reuse, RZ, 0x6
+/*0f40*/  LEA.HI R22, R22, R10, RZ, 0x6
+/*0f50*/  LOP3.LUT R21, R21, 0xffffffc0, RZ, 0xc0, !PT
+/*0f60*/  SHF.R.S32.HI R22, RZ, 0x6, R22
+/*0f70*/  IADD3 R21, -R21, R10, RZ
+/*0f80*/  IMAD.IADD R6, R22, 0x1, R3
+/*0f90*/  LEA R10, R15, R21, 0x6
+/*0fa0*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*0fb0*/  ISETP.GE.OR P0, PT, R6, c[0x0][0x188], P0
+/*0fc0*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*0fd0*/  @!P0 IMAD.WIDE R10, R6, c[0x0][0x184], R10
+/*0fe0*/  MOV R6, RZ
+/*0ff0*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*1000*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*1010*/  @!P0 LDG.E.CONSTANT.SYS R6, [R12]
+/*1020*/  LOP3.LUT R14, R14, 0x3, RZ, 0xc0, !PT
+/*1030*/  LEA R10, R22, 0x1040, 0x8
+/*1040*/  S2R R17, SR_TID.X
+/*1050*/  ISETP.NE.AND P0, PT, R14, 0x1, PT
+/*1060*/  LEA R10, R21, R10, 0x2
+/*1070*/  STS [R10], R6
+/*1080*/  IADD3 R6, R17, 0x100, RZ
+/*1090*/  @!P0 BRA 0x1390
+/*10a0*/  LDL R21, [R1+0x1c]
+/*10b0*/  S2R R22, SR_TID.X
+/*10c0*/  IADD3 R23, R22.reuse, 0x100, RZ
+/*10d0*/  IADD3 R22, R22, 0x100, RZ
+/*10e0*/  SHF.R.S32.HI R22, RZ, 0x1f, R22
+/*10f0*/  LEA.HI R22, R22, R23, RZ, 0x6
+/*1100*/  SHF.R.S32.HI R22, RZ, 0x6, R22
+/*1110*/  IADD3 R6, R22, R3, RZ
+/*1120*/  LEA R10, R15, R21, 0x6
+/*1130*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*1140*/  ISETP.GE.OR P0, PT, R6, c[0x0][0x188], P0
+/*1150*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*1160*/  @!P0 IMAD.WIDE R10, R6, c[0x0][0x184], R10
+/*1170*/  MOV R6, RZ
+/*1180*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*1190*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*11a0*/  @!P0 LDG.E.CONSTANT.SYS R6, [R12]
+/*11b0*/  ISETP.NE.AND P2, PT, R14, 0x2, PT
+/*11c0*/  LEA R10, R22, 0x1040, 0x8
+/*11d0*/  LEA R10, R21, R10, 0x2
+/*11e0*/  STS [R10], R6
+/*11f0*/  IADD3 R6, R17, 0x200, RZ
+/*1200*/  @!P2 BRA 0x1390
+/*1210*/  IADD3 R22, R20.reuse, 0x200, RZ
+/*1220*/  IADD3 R21, R20, 0x200, RZ
+/*1230*/  LDL R20, [R1+0x14]
+/*1240*/  SHF.R.S32.HI R21, RZ, 0x1f, R21
+/*1250*/  LEA.HI R21, R21, R22, RZ, 0x6
+/*1260*/  SHF.R.S32.HI R21, RZ, 0x6, R21
+/*1270*/  IADD3 R6, R21, R3, RZ
+/*1280*/  BMOV.32.CLEAR RZ, B2
+/*1290*/  BSSY B2, 0x1350
+/*12a0*/  MOV R12, RZ
+/*12b0*/  LEA R10, R15, R20, 0x6
+/*12c0*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*12d0*/  ISETP.GE.OR P0, PT, R6, c[0x0][0x188], P0
+/*12e0*/  @P0 BRA 0x1340
+/*12f0*/  SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*1300*/  IMAD.WIDE R10, R6, c[0x0][0x184], R10
+/*1310*/  LEA R12, P0, R10, c[0x0][0x168], 0x2
+/*1320*/  LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P0
+/*1330*/  LDG.E.CONSTANT.SYS R12, [R12]
+/*1340*/  BSYNC B2
+/*1350*/  LEA R6, R21, 0x1040, 0x8
+/*1360*/  IMAD R6, R20, 0x4, R6
+/*1370*/  STS [R6], R12
+/*1380*/  IADD3 R6, R17, 0x300, RZ
+/*1390*/  BSYNC B0
+/*13a0*/  ISETP.GE.U32.AND P0, PT, R9, 0x300, PT
+/*13b0*/  @!P0 BRA 0x18e0
+/*13c0*/  S2UR UR4, SR_CTAID.X
+/*13d0*/  S2R R17, SR_CTAID.X
+/*13e0*/  MOV R9, UR4
+/*13f0*/  SHF.R.S32.HI R11, RZ, 0x1f, R6
+/*1400*/  LEA.HI R11, R11, R6, RZ, 0x6
+/*1410*/  LOP3.LUT R14, R11, 0xffffffc0, RZ, 0xc0, !PT
+/*1420*/  IADD3 R14, -R14, R6, RZ
+/*1430*/  LEA R10, R9, R14, 0x6
+/*1440*/  SHF.R.S32.HI R9, RZ, 0x6, R11
+/*1450*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*1460*/  IADD3 R12, R9, R3, RZ
+/*1470*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x188], P0
+/*1480*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*1490*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x184], R10
+/*14a0*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*14b0*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*14c0*/  MOV R10, RZ
+/*14d0*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*14e0*/  LEA R11, R9, 0x1040, 0x8
+/*14f0*/  IADD3 R9, R6, 0x100, RZ
+/*1500*/  LEA R14, R14, R11, 0x2
+/*1510*/  SHF.R.S32.HI R15, RZ, 0x1f, R9
+/*1520*/  LEA.HI R15, R15, R9, RZ, 0x6
+/*1530*/  STS [R14], R10
+/*1540*/  LOP3.LUT R14, R15, 0xffffffc0, RZ, 0xc0, !PT
+/*1550*/  SHF.R.S32.HI R15, RZ, 0x6, R15
+/*1560*/  IADD3 R14, R9, -R14, RZ
+/*1570*/  MOV R9, R17
+/*1580*/  IMAD.IADD R12, R15, 0x1, R3
+/*1590*/  LEA R10, R9, R14, 0x6
+/*15a0*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*15b0*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x188], P0
+/*15c0*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*15d0*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x184], R10
+/*15e0*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*15f0*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*1600*/  MOV R10, RZ
+/*1610*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*1620*/  IADD3 R11, R6, 0x200, RZ
+/*1630*/  SHF.R.S32.HI R12, RZ, 0x1f, R11
+/*1640*/  LEA R13, R15, 0x1040, 0x8
+/*1650*/  LEA.HI R15, R12, R11, RZ, 0x6
+/*1660*/  LEA R13, R14, R13, 0x2
+/*1670*/  LOP3.LUT R14, R15, 0xffffffc0, RZ, 0xc0, !PT
+/*1680*/  SHF.R.S32.HI R15, RZ, 0x6, R15
+/*1690*/  IADD3 R14, R11, -R14, RZ
+/*16a0*/  IADD3 R12, R15, R3, RZ
+/*16b0*/  STS [R13], R10
+/*16c0*/  LEA R10, R9, R14, 0x6
+/*16d0*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*16e0*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x188], P0
+/*16f0*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*1700*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x184], R10
+/*1710*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*1720*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*1730*/  MOV R10, RZ
+/*1740*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*1750*/  IADD3 R11, R6, 0x300, RZ
+/*1760*/  SHF.R.S32.HI R12, RZ, 0x1f, R11
+/*1770*/  LEA R13, R15, 0x1040, 0x8
+/*1780*/  LEA.HI R15, R12, R11, RZ, 0x6
+/*1790*/  LEA R13, R14, R13, 0x2
+/*17a0*/  LOP3.LUT R14, R15, 0xffffffc0, RZ, 0xc0, !PT
+/*17b0*/  SHF.R.S32.HI R15, RZ, 0x6, R15
+/*17c0*/  IADD3 R14, R11, -R14, RZ
+/*17d0*/  IMAD.IADD R12, R15, 0x1, R3
+/*17e0*/  STS [R13], R10
+/*17f0*/  LEA R10, R9, R14, 0x6
+/*1800*/  ISETP.GE.AND P0, PT, R10, c[0x0][0x184], PT
+/*1810*/  ISETP.GE.OR P0, PT, R12, c[0x0][0x188], P0
+/*1820*/  @!P0 SHF.R.S32.HI R11, RZ, 0x1f, R10
+/*1830*/  @!P0 IMAD.WIDE R10, R12, c[0x0][0x184], R10
+/*1840*/  @!P0 LEA R12, P1, R10, c[0x0][0x168], 0x2
+/*1850*/  @!P0 LEA.HI.X R13, R10, c[0x0][0x16c], R11, 0x2, P1
+/*1860*/  MOV R10, RZ
+/*1870*/  @!P0 LDG.E.CONSTANT.SYS R10, [R12]
+/*1880*/  LEA R15, R15, 0x1040, 0x8
+/*1890*/  ISETP.GE.AND P0, PT, R6, RZ, PT
+/*18a0*/  LEA R15, R14, R15, 0x2
+/*18b0*/  IADD3 R6, R6, 0x400, RZ
+/*18c0*/  STS [R15], R10
+/*18d0*/  @!P0 BRA 0x13f0
+/*18e0*/  BSYNC B1
+/*18f0*/  LDL.LU R10, [R1+0x4]
+/*1900*/  LDL.LU R9, [R1+0x8]
+/*1910*/  LDL.LU R20, [R1+0xc]
+/*1920*/  LDL.LU R11, [R1+0x10]
+/*1930*/  LDL.LU R25, [R1]
+/*1940*/  IADD3 R3, R3, 0x10, RZ
+/*1950*/  BAR.SYNC 0x0
+/*1960*/  LDS.U R23, [R2.X4+0x1080]
+/*1970*/  ISETP.GE.AND P0, PT, R3, c[0x0][0x188], PT
+/*1980*/  LDS.U.128 R12, [R0.X16]
+/*1990*/  LDS.U R22, [R2.X4+0x10c0]
+/*19a0*/  LDS.U R29, [R2.X4+0x1040]
+/*19b0*/  LDS.U R21, [R2.X4+0x1100]
+/*19c0*/  FFMA R17, R23, R13, R24
+/*19d0*/  FFMA R5, R23.reuse, R14.reuse, R5
+/*19e0*/  LDS.U R24, [R2.X4+0x11c0]
+/*19f0*/  FFMA R19, R23, R15.reuse, R19
+/*1a00*/  FFMA R16, R22, R15, R16
+/*1a10*/  FFMA R7, R29, R14, R7
+/*1a20*/  FFMA R8, R21, R13, R8
+/*1a30*/  FFMA R10, R29, R12, R10
+/*1a40*/  FFMA R6, R12.reuse, R23, R9
+/*1a50*/  LDS.U R23, [R2.X4+0x1200]
+/*1a60*/  FFMA R9, R12, R22, R20
+/*1a70*/  FFMA R20, R29.reuse, R13, R4
+/*1a80*/  FFMA R29, R29, R15, R18
+/*1a90*/  FFMA R4, R22.reuse, R13, R27
+/*1aa0*/  FFMA R18, R22, R14, R25
+/*1ab0*/  FFMA R11, R12, R21, R11
+/*1ac0*/  LDS.U R25, [R2.X4+0x1180]
+/*1ad0*/  FFMA R22, R21.reuse, R14, R28
+/*1ae0*/  FFMA R21, R21, R15, R26
+/*1af0*/  LDS.U.128 R12, [R0.X16+0x100]
+/*1b00*/  LDS.U R12, [R2.X4+0x1140]
+/*1b10*/  FFMA R18, R24, R15, R18
+/*1b20*/  FFMA R27, R13.reuse, R24, R9
+/*1b30*/  FFMA R26, R13, R23, R11
+/*1b40*/  FFMA R4, R24, R14, R4
+/*1b50*/  LDS.U R11, [R2.X4+0x1300]
+/*1b60*/  FFMA R28, R12.reuse, R13, R10
+/*1b70*/  FFMA R10, R25, R15.reuse, R5
+/*1b80*/  LDS.U R5, [R0.X16+0x110]
+/*1b90*/  FFMA R7, R12, R15, R7
+/*1ba0*/  FFMA R8, R23.reuse, R14.reuse, R8
+/*1bb0*/  FFMA R15, R23, R15, R22
+/*1bc0*/  FFMA R9, R12, R14.reuse, R20
+/*1bd0*/  FFMA R6, R13, R25, R6
+/*1be0*/  LDS.U R20, [R2.X4+0x1280]
+/*1bf0*/  FFMA R17, R25, R14, R17
+/*1c00*/  FFMA R16, R24, R5, R16
+/*1c10*/  FFMA R21, R23, R5.reuse, R21
+/*1c20*/  LDS.U R24, [R2.X4+0x1240]
+/*1c30*/  FFMA R13, R12, R5.reuse, R29
+/*1c40*/  FFMA R19, R25, R5, R19
+/*1c50*/  LDS.U.64 R22, [R0.X16+0x208]
+/*1c60*/  LDS.U R12, [R2.X4+0x12c0]
+/*1c70*/  FFMA R29, R24, R23, R9
+/*1c80*/  FFMA R25, R11, R23, R8
+/*1c90*/  LDS.U.64 R8, [R0.X16+0x210]
+/*1ca0*/  FFMA R5, R24, R22, R28
+/*1cb0*/  FFMA R6, R22.reuse, R20, R6
+/*1cc0*/  FFMA R14, R22.reuse, R12, R27
+/*1cd0*/  FFMA R22, R22, R11, R26
+/*1ce0*/  FFMA R28, R20, R23, R17
+/*1cf0*/  FFMA R26, R12, R23, R4
+/*1d00*/  LDS.U R4, [R0.X16+0x30c]
+/*1d10*/  FFMA R17, R20, R8.reuse, R10
+/*1d20*/  FFMA R23, R24, R8.reuse, R7
+/*1d30*/  FFMA R18, R12, R8.reuse, R18
+/*1d40*/  FFMA R10, R11, R8, R15
+/*1d50*/  FFMA R13, R24, R9.reuse, R13
+/*1d60*/  LDS.U R15, [R2.X4+0x1380]
+/*1d70*/  FFMA R8, R20, R9, R19
+/*1d80*/  FFMA R16, R12, R9.reuse, R16
+/*1d90*/  LDS.U R19, [R2.X4+0x1340]
+/*1da0*/  FFMA R9, R11, R9, R21
+/*1db0*/  LDS.U R12, [R2.X4+0x13c0]
+/*1dc0*/  LDS.U R11, [R2.X4+0x1400]
+/*1dd0*/  FFMA R27, R4.reuse, R15, R6
+/*1de0*/  FFMA R20, R19, R4, R5
+/*1df0*/  FFMA R14, R4.reuse, R12, R14
+/*1e00*/  FFMA R22, R4, R11, R22
+/*1e10*/  LDS.U.128 R4, [R0.X16+0x310]
+/*1e20*/  FFMA R24, R19, R4, R29
+/*1e30*/  MOV R29, R20
+/*1e40*/  FFMA R20, R15, R4.reuse, R28
+/*1e50*/  FFMA R26, R12, R4.reuse, R26
+/*1e60*/  FFMA R21, R11, R4, R25
+/*1e70*/  FFMA R23, R19, R5, R23
+/*1e80*/  FFMA R17, R15, R5.reuse, R17
+/*1e90*/  FFMA R18, R12.reuse, R5.reuse, R18
+/*1ea0*/  FFMA R10, R11, R5, R10
+/*1eb0*/  FFMA R13, R19, R6.reuse, R13
+/*1ec0*/  FFMA R8, R15, R6.reuse, R8
+/*1ed0*/  LDS.U R19, [R2.X4+0x1440]
+/*1ee0*/  FFMA R16, R12, R6, R16
+/*1ef0*/  FFMA R9, R11, R6, R9
+/*1f00*/  LDS.U R15, [R2.X4+0x1480]
+/*1f10*/  LDS.U.128 R4, [R0.X16+0x410]
+/*1f20*/  LDS.U R12, [R2.X4+0x14c0]
+/*1f30*/  LDS.U R11, [R2.X4+0x1500]
+/*1f40*/  FFMA R28, R19, R4, R29
+/*1f50*/  FFMA R29, R4.reuse, R15, R27
+/*1f60*/  FFMA R24, R19, R5.reuse, R24
+/*1f70*/  FFMA R20, R15, R5.reuse, R20
+/*1f80*/  FFMA R27, R4, R12, R14
+/*1f90*/  FFMA R25, R12, R5, R26
+/*1fa0*/  FFMA R22, R4, R11, R22
+/*1fb0*/  MOV R4, R28
+/*1fc0*/  FFMA R21, R11, R5, R21
+/*1fd0*/  FFMA R28, R19, R7.reuse, R13
+/*1fe0*/  FFMA R17, R15.reuse, R6.reuse, R17
+/*1ff0*/  FFMA R8, R15, R7.reuse, R8
+/*2000*/  FFMA R18, R12.reuse, R6.reuse, R18
+/*2010*/  FFMA R16, R12, R7.reuse, R16
+/*2020*/  FFMA R10, R11.reuse, R6, R10
+/*2030*/  LDS.U.128 R12, [R0.X16+0x510]
+/*2040*/  FFMA R5, R11, R7, R9
+/*2050*/  FFMA R23, R19, R6, R23
+/*2060*/  LDS.U R11, [R2.X4+0x1580]
+/*2070*/  LDS.U R19, [R2.X4+0x1540]
+/*2080*/  LDS.U R9, [R2.X4+0x15c0]
+/*2090*/  LDS.U R12, [R2.X4+0x1600]
+/*20a0*/  FFMA R7, R11, R14, R20
+/*20b0*/  FFMA R17, R11, R15.reuse, R17
+/*20c0*/  FFMA R6, R19.reuse, R14.reuse, R24
+/*20d0*/  FFMA R23, R19, R15.reuse, R23
+/*20e0*/  FFMA R20, R9.reuse, R14.reuse, R25
+/*20f0*/  FFMA R18, R9, R15, R18
+/*2100*/  LDS.U.64 R24, [R0.X16+0x618]
+/*2110*/  FFMA R21, R12, R14, R21
+/*2120*/  FFMA R4, R19, R13, R4
+/*2130*/  LDS.U R14, [R0.X16+0x520]
+/*2140*/  FFMA R26, R13.reuse, R11, R29
+/*2150*/  FFMA R27, R13.reuse, R9, R27
+/*2160*/  FFMA R22, R13, R12, R22
+/*2170*/  FFMA R15, R12, R15, R10
+/*2180*/  FFMA R10, R19, R14, R28
+/*2190*/  FFMA R13, R11, R14.reuse, R8
+/*21a0*/  LDS.U R19, [R2.X4+0x1640]
+/*21b0*/  FFMA R16, R9, R14.reuse, R16
+/*21c0*/  FFMA R12, R12, R14, R5
+/*21d0*/  LDS.U R9, [R2.X4+0x16c0]
+/*21e0*/  LDS.U R14, [R2.X4+0x1680]
+/*21f0*/  LDS.U R8, [R2.X4+0x1700]
+/*2200*/  FFMA R4, R19, R24, R4
+/*2210*/  FFMA R11, R24.reuse, R9, R27
+/*2220*/  FFMA R27, R19, R25.reuse, R6
+/*2230*/  FFMA R5, R24, R14, R26
+/*2240*/  FFMA R26, R14, R25.reuse, R7
+/*2250*/  LDS.U.64 R6, [R0.X16+0x620]
+/*2260*/  FFMA R24, R24, R8, R22
+/*2270*/  FFMA R28, R9, R25, R20
+/*2280*/  FFMA R22, R8, R25, R21
+/*2290*/  FFMA R23, R19, R6.reuse, R23
+/*22a0*/  FFMA R17, R14, R6.reuse, R17
+/*22b0*/  FFMA R18, R9, R6.reuse, R18
+/*22c0*/  FFMA R15, R8, R6, R15
+/*22d0*/  FFMA R10, R19, R7.reuse, R10
+/*22e0*/  LDS.U R6, [R0.X16+0x71c]
+/*22f0*/  FFMA R13, R14, R7, R13
+/*2300*/  FFMA R16, R9, R7.reuse, R16
+/*2310*/  LDS.U R19, [R2.X4+0x1740]
+/*2320*/  FFMA R12, R8, R7, R12
+/*2330*/  LDS.U R14, [R2.X4+0x1780]
+/*2340*/  LDS.U R9, [R2.X4+0x17c0]
+/*2350*/  LDS.U R8, [R2.X4+0x1800]
+/*2360*/  FFMA R29, R19, R6, R4
+/*2370*/  FFMA R20, R6, R14, R5
+/*2380*/  FFMA R11, R6.reuse, R9, R11
+/*2390*/  FFMA R24, R6, R8, R24
+/*23a0*/  LDS.U.128 R4, [R0.X16+0x720]
+/*23b0*/  FFMA R25, R19, R4.reuse, R27
+/*23c0*/  FFMA R21, R14, R4.reuse, R26
+/*23d0*/  FFMA R28, R9, R4, R28
+/*23e0*/  FFMA R22, R8, R4, R22
+/*23f0*/  FFMA R23, R19, R5.reuse, R23
+/*2400*/  FFMA R17, R14, R5.reuse, R17
+/*2410*/  FFMA R18, R9, R5.reuse, R18
+/*2420*/  FFMA R15, R8, R5, R15
+/*2430*/  FFMA R10, R19, R6, R10
+/*2440*/  FFMA R13, R14, R6.reuse, R13
+/*2450*/  LDS.U R19, [R2.X4+0x1840]
+/*2460*/  FFMA R16, R9, R6.reuse, R16
+/*2470*/  FFMA R12, R8, R6, R12
+/*2480*/  LDS.U R14, [R2.X4+0x1880]
+/*2490*/  LDS.U.128 R4, [R0.X16+0x820]
+/*24a0*/  LDS.U R9, [R2.X4+0x18c0]
+/*24b0*/  LDS.U R8, [R2.X4+0x1900]
+/*24c0*/  FFMA R10, R19, R7, R10
+/*24d0*/  FFMA R26, R19.reuse, R4, R29
+/*24e0*/  FFMA R23, R19, R6.reuse, R23
+/*24f0*/  FFMA R17, R14, R6.reuse, R17
+/*2500*/  FFMA R18, R9, R6, R18
+/*2510*/  FFMA R27, R4, R14, R20
+/*2520*/  FFMA R15, R8, R6, R15
+/*2530*/  MOV R6, R10
+/*2540*/  FFMA R29, R4.reuse, R9, R11
+/*2550*/  LDS.U R20, [R2.X4+0x1940]
+/*2560*/  FFMA R24, R4, R8, R24
+/*2570*/  FFMA R28, R9.reuse, R5.reuse, R28
+/*2580*/  FFMA R22, R8.reuse, R5, R22
+/*2590*/  FFMA R16, R9, R7.reuse, R16
+/*25a0*/  FFMA R12, R8, R7, R12
+/*25b0*/  FFMA R25, R19, R5.reuse, R25
+/*25c0*/  LDS.U.128 R8, [R0.X16+0x920]
+/*25d0*/  FFMA R21, R14, R5, R21
+/*25e0*/  FFMA R13, R14, R7, R13
+/*25f0*/  LDS.U R5, [R2.X4+0x1a00]
+/*2600*/  LDS.U R19, [R2.X4+0x1980]
+/*2610*/  LDS.U R14, [R2.X4+0x19c0]
+/*2620*/  FFMA R4, R20.reuse, R9, R26
+/*2630*/  FFMA R8, R20, R11, R23
+/*2640*/  LDS.U R23, [R2.X4+0x1b40]
+/*2650*/  FFMA R26, R9, R5, R24
+/*2660*/  MOV R24, R6
+/*2670*/  FFMA R6, R20, R10.reuse, R25
+/*2680*/  FFMA R7, R19, R10.reuse, R21
+/*2690*/  FFMA R22, R5, R10.reuse, R22
+/*26a0*/  FFMA R21, R14, R10, R28
+/*26b0*/  LDS.U R10, [R0.X16+0x930]
+/*26c0*/  FFMA R17, R19, R11, R17
+/*26d0*/  FFMA R18, R14, R11, R18
+/*26e0*/  FFMA R27, R9.reuse, R19, R27
+/*26f0*/  FFMA R29, R9, R14, R29
+/*2700*/  FFMA R11, R5, R11, R15
+/*2710*/  FFMA R15, R20, R10.reuse, R24
+/*2720*/  FFMA R9, R19, R10.reuse, R13
+/*2730*/  LDS.U.64 R24, [R0.X16+0xa28]
+/*2740*/  FFMA R16, R14, R10, R16
+/*2750*/  FFMA R12, R5, R10, R12
+/*2760*/  LDS.U R13, [R2.X4+0x1ac0]
+/*2770*/  LDS.U R19, [R2.X4+0x1a40]
+/*2780*/  LDS.U R14, [R2.X4+0x1a80]
+/*2790*/  LDS.U R10, [R2.X4+0x1b00]
+/*27a0*/  FFMA R20, R24, R13, R29
+/*27b0*/  FFMA R29, R19.reuse, R25.reuse, R6
+/*27c0*/  FFMA R4, R19, R24, R4
+/*27d0*/  FFMA R28, R14, R25.reuse, R7
+/*27e0*/  LDS.U.64 R6, [R0.X16+0xa30]
+/*27f0*/  FFMA R5, R24.reuse, R14, R27
+/*2800*/  FFMA R24, R24, R10, R26
+/*2810*/  FFMA R26, R13, R25, R21
+/*2820*/  FFMA R25, R10, R25, R22
+/*2830*/  LDS.U R22, [R2.X4+0x1b80]
+/*2840*/  FFMA R8, R19, R6.reuse, R8
+/*2850*/  FFMA R17, R14, R6.reuse, R17
+/*2860*/  FFMA R18, R13.reuse, R6.reuse, R18
+/*2870*/  FFMA R11, R10, R6, R11
+/*2880*/  FFMA R9, R14, R7.reuse, R9
+/*2890*/  LDS.U R6, [R0.X16+0xb2c]
+/*28a0*/  FFMA R16, R13, R7, R16
+/*28b0*/  FFMA R15, R19, R7.reuse, R15
+/*28c0*/  LDS.U R14, [R2.X4+0x1bc0]
+/*28d0*/  FFMA R12, R10, R7, R12
+/*28e0*/  LDS.U R13, [R2.X4+0x1c00]
+/*28f0*/  FFMA R19, R23.reuse, R6, R4
+/*2900*/  FFMA R27, R6.reuse, R22, R5
+/*2910*/  FFMA R20, R6.reuse, R14, R20
+/*2920*/  FFMA R24, R6, R13, R24
+/*2930*/  LDS.U.128 R4, [R0.X16+0xb30]
+/*2940*/  FFMA R21, R23, R4.reuse, R29
+/*2950*/  MOV R29, R19
+/*2960*/  FFMA R10, R22, R4, R28
+/*2970*/  FFMA R26, R14, R4.reuse, R26
+/*2980*/  FFMA R19, R13, R4, R25
+/*2990*/  FFMA R8, R23, R5.reuse, R8
+/*29a0*/  FFMA R17, R22, R5.reuse, R17
+/*29b0*/  FFMA R18, R14, R5.reuse, R18
+/*29c0*/  FFMA R11, R13, R5, R11
+/*29d0*/  FFMA R15, R23, R6.reuse, R15
+/*29e0*/  FFMA R9, R22, R6.reuse, R9
+/*29f0*/  LDS.U R23, [R2.X4+0x1c40]
+/*2a00*/  FFMA R16, R14, R6.reuse, R16
+/*2a10*/  FFMA R12, R13, R6, R12
+/*2a20*/  LDS.U R22, [R2.X4+0x1c80]
+/*2a30*/  LDS.U.128 R4, [R0.X16+0xc30]
+/*2a40*/  LDS.U R14, [R2.X4+0x1cc0]
+/*2a50*/  LDS.U R13, [R2.X4+0x1d00]
+/*2a60*/  FFMA R25, R23, R4, R29
+/*2a70*/  FFMA R29, R4, R22, R27
+/*2a80*/  FFMA R10, R22, R5.reuse, R10
+/*2a90*/  FFMA R8, R23, R6, R8
+/*2aa0*/  FFMA R28, R4, R14, R20
+/*2ab0*/  FFMA R26, R14, R5, R26
+/*2ac0*/  LDS.U R20, [R2.X4+0x1e00]
+/*2ad0*/  FFMA R24, R4, R13, R24
+/*2ae0*/  FFMA R4, R23, R5.reuse, R21
+/*2af0*/  FFMA R19, R13, R5, R19
+/*2b00*/  MOV R5, R25
+/*2b10*/  FFMA R27, R23, R7.reuse, R15
+/*2b20*/  LDS.U R25, [R2.X4+0x1d40]
+/*2b30*/  FFMA R17, R22.reuse, R6.reuse, R17
+/*2b40*/  FFMA R9, R22, R7, R9
+/*2b50*/  LDS.U R23, [R2.X4+0x1d80]
+/*2b60*/  FFMA R18, R14, R6, R18
+/*2b70*/  FFMA R16, R14, R7.reuse, R16
+/*2b80*/  LDS.U R21, [R2.X4+0x1dc0]
+/*2b90*/  FFMA R6, R13.reuse, R6, R11
+/*2ba0*/  FFMA R7, R13, R7, R12
+/*2bb0*/  LDS.U.128 R12, [R0.X16+0xd30]
+/*2bc0*/  FFMA R11, R25, R13, R5
+/*2bd0*/  FFMA R22, R13, R23, R29
+/*2be0*/  FFMA R28, R13.reuse, R21, R28
+/*2bf0*/  FFMA R24, R13, R20, R24
+/*2c00*/  FFMA R13, R23.reuse, R15, R17
+/*2c10*/  LDS.U R17, [R0.X16+0xd40]
+/*2c20*/  FFMA R5, R23, R14.reuse, R10
+/*2c30*/  FFMA R10, R21, R14.reuse, R26
+/*2c40*/  FFMA R4, R25, R14, R4
+/*2c50*/  FFMA R12, R20.reuse, R14, R19
+/*2c60*/  FFMA R26, R25, R15.reuse, R8
+/*2c70*/  LDS.U R19, [R2.X4+0x1e80]
+/*2c80*/  FFMA R14, R21, R15.reuse, R18
+/*2c90*/  FFMA R15, R20, R15, R6
+/*2ca0*/  LDS.U R18, [R2.X4+0x1e40]
+/*2cb0*/  FFMA R8, R25, R17.reuse, R27
+/*2cc0*/  FFMA R9, R23, R17.reuse, R9
+/*2cd0*/  LDS.U R25, [R2.X4+0x1fc0]
+/*2ce0*/  FFMA R16, R21, R17, R16
+/*2cf0*/  FFMA R17, R20, R17, R7
+/*2d00*/  LDS.U R21, [R2.X4+0x1f00]
+/*2d10*/  LDS.U.64 R6, [R0.X16+0xe38]
+/*2d20*/  LDS.U R20, [R2.X4+0x1ec0]
+/*2d30*/  FFMA R27, R18, R6, R11
+/*2d40*/  FFMA R22, R6.reuse, R19, R22
+/*2d50*/  FFMA R23, R6.reuse, R20, R28
+/*2d60*/  FFMA R24, R6, R21, R24
+/*2d70*/  FFMA R6, R20, R7.reuse, R10
+/*2d80*/  LDS.U.64 R10, [R0.X16+0xe40]
+/*2d90*/  FFMA R4, R18, R7.reuse, R4
+/*2da0*/  FFMA R5, R19, R7, R5
+/*2db0*/  FFMA R12, R21.reuse, R7, R12
+/*2dc0*/  FFMA R7, R18, R10.reuse, R26
+/*2dd0*/  FFMA R14, R20, R10.reuse, R14
+/*2de0*/  LDS.U R26, [R2.X4+0x2000]
+/*2df0*/  FFMA R18, R18, R11.reuse, R8
+/*2e00*/  FFMA R16, R20, R11, R16
+/*2e10*/  LDS.U R8, [R0.X16+0xf3c]
+/*2e20*/  FFMA R15, R21, R10, R15
+/*2e30*/  FFMA R17, R21, R11.reuse, R17
+/*2e40*/  LDS.U R20, [R2.X4+0x1f40]
+/*2e50*/  FFMA R13, R19.reuse, R10, R13
+/*2e60*/  FFMA R19, R19, R11, R9
+/*2e70*/  LDS.U R21, [R2.X4+0x1f80]
+/*2e80*/  FFMA R23, R8, R25, R23
+/*2e90*/  FFMA R10, R20, R8, R27
+/*2ea0*/  FFMA R9, R8, R21, R22
+/*2eb0*/  FFMA R22, R8, R26, R24
+/*2ec0*/  STL [R1+0x4], R10
+/*2ed0*/  STL [R1+0x8], R9
+/*2ee0*/  LDS.U.128 R8, [R0.X16+0xf40]
+/*2ef0*/  STL [R1+0xc], R23
+/*2f00*/  STL [R1+0x10], R22
+/*2f10*/  FFMA R27, R25, R8, R6
+/*2f20*/  FFMA R6, R25, R9.reuse, R14
+/*2f30*/  FFMA R4, R20, R8.reuse, R4
+/*2f40*/  FFMA R24, R21, R8.reuse, R5
+/*2f50*/  FFMA R8, R26.reuse, R8, R12
+/*2f60*/  STL [R1], R6
+/*2f70*/  FFMA R28, R26, R9.reuse, R15
+/*2f80*/  FFMA R7, R20, R9, R7
+/*2f90*/  FFMA R5, R21.reuse, R9, R13
+/*2fa0*/  FFMA R18, R20, R10.reuse, R18
+/*2fb0*/  FFMA R19, R21, R10.reuse, R19
+/*2fc0*/  FFMA R16, R25, R10.reuse, R16
+/*2fd0*/  FFMA R26, R26, R10, R17
+/*2fe0*/  BAR.SYNC 0x0
+/*2ff0*/  @!P0 BRA 0x420

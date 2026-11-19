@@ -1,0 +1,137 @@
+
+=== 0. system
+name, compute_cap, driver_version, clocks.max.sm [MHz], power.limit [W]
+Tesla T4, 7.5, 580.82.07, 1590 MHz, 70.00 W
+Cuda compilation tools, release 13.0, V13.0.88
+Build cuda_13.0.r13.0/compiler.36424714_0
+Version 2025.3.1.0 (build 36398880) (public-release)
+Thu Nov 19 10:54:15 PM UTC 2026
+
+=== 1. default build: registers, spills, SASS
+ default reg64_minb4  total 2112  loop  643 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+ default reg64_minb3  total 2112  loop  643 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+ default reg64_minb2  total 2160  loop  669 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+ default reg64_pad4   total 2144  loop  657 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+ default reg64_pad0   total 2144  loop  657 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+ default reg64        total 2160  loop  669 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+ default reg32        total  896  loop  559 instr: FFMA 128  LDS 112 (.128  0)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 1.14
+ default tiled        total  192  loop  100 instr: FFMA  32  LDS  40 (.128  8)  STS  2  LDG  2  BAR 2  spills LDL 0 STL 0  FFMA/LDS 0.8
+ default naive        total  312  loop   88 instr: FFMA  16  LDS   0 (.128  0)  STS  0  LDG 32  BAR 0  spills LDL 0 STL 0  FFMA/LDS 
+
+=== 2. timing: every kernel, 3 sizes, plus a repeat of the main size
+GPU Tesla T4, 40 SMs, 65536 regs/SM, 1024 max threads/SM | M=2048 N=512 K=128 | tag=default
+  naive         479.83 us    559.4 GFLOP/s  regs  50  spill    0 B  smem     0 B   4 blk/SM (100.0% occ)   25.60 waves  cv 10.7%  err 8.5e-07
+  tiled         288.65 us    930.0 GFLOP/s  regs  45  spill    0 B  smem  8320 B   1 blk/SM (100.0% occ)   25.60 waves  cv  1.2%  err 8.5e-07
+  reg32         198.10 us   1355.1 GFLOP/s  regs  64  spill    0 B  smem  8320 B   4 blk/SM (100.0% occ)    6.40 waves  cv  5.6%  err 8.5e-07
+  reg64         118.88 us   2258.1 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  4.0%  err 8.5e-07
+  reg64_pad0    137.94 us   1946.0 GFLOP/s  regs  69  spill    0 B  smem  8192 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  1.6%  err 8.5e-07
+  reg64_pad4    113.53 us   2364.5 GFLOP/s  regs  69  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  5.6%  err 8.5e-07
+  reg64_minb2   119.12 us   2253.5 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  1.3%  err 8.5e-07
+  reg64_minb3   117.78 us   2279.1 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  2.8%  err 8.5e-07
+  reg64_minb4   117.85 us   2277.8 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  2.1%  err 8.5e-07
+  cublas        102.47 us   2619.6 GFLOP/s  regs  -1  spill   -1 B  smem    -1 B  -1 blk/SM ( -1.0% occ)   -1.00 waves  cv  7.6%  err 8.5e-07
+GPU Tesla T4, 40 SMs, 65536 regs/SM, 1024 max threads/SM | M=32 N=512 K=128 | tag=default
+  naive           8.45 us    496.4 GFLOP/s  regs  50  spill    0 B  smem     0 B   4 blk/SM (100.0% occ)    0.40 waves  cv  0.2%  err 5.2e-07
+  tiled          10.14 us    413.7 GFLOP/s  regs  45  spill    0 B  smem  8320 B   1 blk/SM (100.0% occ)    0.40 waves  cv  0.0%  err 5.2e-07
+  reg32          10.00 us    419.6 GFLOP/s  regs  64  spill    0 B  smem  8320 B   4 blk/SM (100.0% occ)    0.10 waves  cv  0.1%  err 5.2e-07
+  reg64          16.95 us    247.5 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    0.07 waves  cv  0.0%  err 5.2e-07
+  reg64_pad0     17.08 us    245.5 GFLOP/s  regs  69  spill    0 B  smem  8192 B   3 blk/SM ( 75.0% occ)    0.07 waves  cv  0.0%  err 5.2e-07
+  reg64_pad4     16.08 us    260.8 GFLOP/s  regs  69  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    0.07 waves  cv  0.1%  err 5.2e-07
+  reg64_minb2    16.91 us    248.1 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    0.07 waves  cv  0.3%  err 5.2e-07
+  reg64_minb3    16.80 us    249.6 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    0.05 waves  cv  0.1%  err 5.2e-07
+  reg64_minb4    16.80 us    249.6 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    0.05 waves  cv  0.0%  err 5.2e-07
+  cublas          9.63 us    435.7 GFLOP/s  regs  -1  spill   -1 B  smem    -1 B  -1 blk/SM ( -1.0% occ)   -1.00 waves  cv  2.5%  err 2.6e-07
+GPU Tesla T4, 40 SMs, 65536 regs/SM, 1024 max threads/SM | M=8192 N=512 K=128 | tag=default
+  naive        1630.26 us    658.6 GFLOP/s  regs  50  spill    0 B  smem     0 B   4 blk/SM (100.0% occ)  102.40 waves  cv  0.7%  err 9.4e-07
+  tiled        1143.24 us    939.2 GFLOP/s  regs  45  spill    0 B  smem  8320 B   1 blk/SM (100.0% occ)  102.40 waves  cv  0.4%  err 9.4e-07
+  reg32         786.58 us   1365.1 GFLOP/s  regs  64  spill    0 B  smem  8320 B   4 blk/SM (100.0% occ)   25.60 waves  cv  1.2%  err 9.4e-07
+  reg64         463.46 us   2316.8 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  3.0%  err 9.4e-07
+  reg64_pad0    530.51 us   2024.0 GFLOP/s  regs  69  spill    0 B  smem  8192 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  1.5%  err 9.4e-07
+  reg64_pad4    443.40 us   2421.6 GFLOP/s  regs  69  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  3.7%  err 9.4e-07
+  reg64_minb2   466.01 us   2304.1 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  2.3%  err 9.4e-07
+  reg64_minb3   460.22 us   2333.1 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  2.7%  err 9.4e-07
+  reg64_minb4   460.10 us   2333.7 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  2.7%  err 9.4e-07
+  cublas        400.31 us   2682.3 GFLOP/s  regs  -1  spill   -1 B  smem    -1 B  -1 blk/SM ( -1.0% occ)   -1.00 waves  cv 11.1%  err 9.4e-07
+GPU Tesla T4, 40 SMs, 65536 regs/SM, 1024 max threads/SM | M=2048 N=512 K=128 | tag=rerun
+  naive         414.28 us    648.0 GFLOP/s  regs  50  spill    0 B  smem     0 B   4 blk/SM (100.0% occ)   25.60 waves  cv  3.7%  err 8.5e-07
+  tiled         291.52 us    920.8 GFLOP/s  regs  45  spill    0 B  smem  8320 B   1 blk/SM (100.0% occ)   25.60 waves  cv  2.2%  err 8.5e-07
+  reg32         203.03 us   1322.2 GFLOP/s  regs  64  spill    0 B  smem  8320 B   4 blk/SM (100.0% occ)    6.40 waves  cv  5.2%  err 8.5e-07
+  reg64         122.89 us   2184.4 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  5.2%  err 8.5e-07
+  reg64_pad0    141.31 us   1899.6 GFLOP/s  regs  69  spill    0 B  smem  8192 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  1.5%  err 8.5e-07
+  reg64_pad4    117.86 us   2277.6 GFLOP/s  regs  69  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  5.4%  err 8.5e-07
+  reg64_minb2   122.29 us   2195.1 GFLOP/s  regs  72  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  1.1%  err 8.5e-07
+  reg64_minb3   121.32 us   2212.5 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  3.7%  err 8.5e-07
+  reg64_minb4   120.27 us   2231.9 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  1.0%  err 8.5e-07
+  cublas        105.12 us   2553.7 GFLOP/s  regs  -1  spill   -1 B  smem    -1 B  -1 blk/SM ( -1.0% occ)   -1.00 waves  cv  5.5%  err 8.5e-07
+
+=== 3. register sweep: -maxrregcount with __launch_bounds__ removed
+     r32 reg64_pad4   total 2184  loop  685 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 25 STL 20  FFMA/LDS 3.2
+     r32 reg64        total 2200  loop  702 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 24 STL 19  FFMA/LDS 2.78
+  reg64         241.19 us   1113.0 GFLOP/s  regs  32  spill   40 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  0.9%  err 8.5e-07
+  reg64_pad4    149.88 us   1791.0 GFLOP/s  regs  32  spill   48 B  smem  8448 B   4 blk/SM (100.0% occ)    1.60 waves  cv  6.9%  err 8.5e-07
+  reg64         574.26 us   1869.8 GFLOP/s  regs  32  spill   40 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  2.2%  err 9.4e-07
+  reg64_pad4    567.06 us   1893.5 GFLOP/s  regs  32  spill   48 B  smem  8448 B   4 blk/SM (100.0% occ)    6.40 waves  cv  2.9%  err 9.4e-07
+     r40 reg64_pad4   total 2120  loop  645 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 1 STL 1  FFMA/LDS 3.2
+     r40 reg64        total 2136  loop  660 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 4 STL 4  FFMA/LDS 2.78
+  reg64         149.57 us   1794.8 GFLOP/s  regs  40  spill   16 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  0.4%  err 8.5e-07
+  reg64_pad4    128.02 us   2096.8 GFLOP/s  regs  40  spill    8 B  smem  8448 B   4 blk/SM (100.0% occ)    1.60 waves  cv 13.0%  err 8.5e-07
+  reg64         491.56 us   2184.4 GFLOP/s  regs  40  spill   16 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  3.6%  err 9.4e-07
+  reg64_pad4    468.66 us   2291.1 GFLOP/s  regs  40  spill    8 B  smem  8448 B   4 blk/SM (100.0% occ)    6.40 waves  cv  3.6%  err 9.4e-07
+     r48 reg64_pad4   total 2096  loop  625 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+     r48 reg64        total 2112  loop  637 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         166.00 us   1617.0 GFLOP/s  regs  48  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv 12.0%  err 8.5e-07
+  reg64_pad4    117.70 us   2280.6 GFLOP/s  regs  48  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    1.60 waves  cv  1.7%  err 8.5e-07
+  reg64         474.93 us   2260.8 GFLOP/s  regs  48  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  4.1%  err 9.4e-07
+  reg64_pad4    451.15 us   2380.0 GFLOP/s  regs  48  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    6.40 waves  cv  4.5%  err 9.4e-07
+     r56 reg64_pad4   total 2152  loop  668 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+     r56 reg64        total 2160  loop  680 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         180.84 us   1484.4 GFLOP/s  regs  56  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  3.1%  err 8.5e-07
+  reg64_pad4    119.17 us   2252.6 GFLOP/s  regs  56  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    1.60 waves  cv  3.7%  err 8.5e-07
+  reg64         478.68 us   2243.1 GFLOP/s  regs  56  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  3.7%  err 9.4e-07
+  reg64_pad4    458.99 us   2339.4 GFLOP/s  regs  56  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    6.40 waves  cv  4.8%  err 9.4e-07
+     r64 reg64_pad4   total 2160  loop  660 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+     r64 reg64        total 2160  loop  670 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         223.44 us   1201.4 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  0.0%  err 8.5e-07
+  reg64_pad4    119.46 us   2247.1 GFLOP/s  regs  64  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    1.60 waves  cv  6.8%  err 8.5e-07
+  reg64         483.17 us   2222.3 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    6.40 waves  cv  3.3%  err 9.4e-07
+  reg64_pad4    461.68 us   2325.7 GFLOP/s  regs  64  spill    0 B  smem  8448 B   4 blk/SM (100.0% occ)    6.40 waves  cv  4.8%  err 9.4e-07
+     r80 reg64_pad4   total 2160  loop  654 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+     r80 reg64        total 2168  loop  666 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         164.81 us   1628.7 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  0.0%  err 8.5e-07
+  reg64_pad4    119.33 us   2249.5 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv 14.6%  err 8.5e-07
+  reg64         481.62 us   2229.4 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  3.6%  err 9.4e-07
+  reg64_pad4    463.74 us   2315.4 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  4.4%  err 9.4e-07
+     r96 reg64_pad4   total 2160  loop  654 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+     r96 reg64        total 2160  loop  666 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         159.72 us   1680.6 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  9.4%  err 8.5e-07
+  reg64_pad4    120.54 us   2227.0 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  7.5%  err 8.5e-07
+  reg64         482.20 us   2226.7 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  2.8%  err 9.4e-07
+  reg64_pad4    464.03 us   2314.0 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  4.5%  err 9.4e-07
+    r128 reg64_pad4   total 2160  loop  654 instr: FFMA 256  LDS  80 (.128 16)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 3.2
+    r128 reg64        total 2160  loop  666 instr: FFMA 256  LDS  92 (.128 12)  STS 14  LDG 14  BAR 2  spills LDL 0 STL 0  FFMA/LDS 2.78
+  reg64         227.42 us   1180.4 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  0.0%  err 8.5e-07
+  reg64_pad4    120.37 us   2230.1 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    2.13 waves  cv  7.2%  err 8.5e-07
+  reg64         486.80 us   2205.7 GFLOP/s  regs  80  spill    0 B  smem  8256 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  3.2%  err 9.4e-07
+  reg64_pad4    463.46 us   2316.8 GFLOP/s  regs  76  spill    0 B  smem  8448 B   3 blk/SM ( 75.0% occ)    8.53 waves  cv  4.7%  err 9.4e-07
+  reg64         131.95 us   2034.4 GFLOP/s  regs  64  spill    0 B  smem  8256 B   4 blk/SM (100.0% occ)    1.60 waves  cv  0.0%  err 8.5e-07
+
+=== 4. Nsight Compute counters (one launch per kernel, clocks not locked)
+  naive_M2048: 3 csv lines
+  tiled_M2048: 3 csv lines
+  reg32_M2048: 3 csv lines
+  reg64_M2048: 3 csv lines
+  reg64_pad0_M2048: 3 csv lines
+  reg64_pad4_M2048: 3 csv lines
+  reg64_minb2_M2048: 3 csv lines
+  reg64_minb3_M2048: 3 csv lines
+  reg64_minb4_M2048: 3 csv lines
+  cublas_M2048: 3 csv lines
+  naive_M32: 3 csv lines
+  reg32_M32: 3 csv lines
+  reg64_M32: 3 csv lines
+  cublas_M32: 3 csv lines
+
+=== 5. analysis
+wrote results/perf/SUMMARY.md and 5 plots
+
+done: results/perf

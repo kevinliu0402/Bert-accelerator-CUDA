@@ -80,14 +80,27 @@ __global__ void gemm_tiled_kernel(const float* __restrict__ A, const float* __re
 // 3. Register blocking: each thread keeps a TM x TN block of outputs in
 //    registers and reuses every shared-memory value TM or TN times.
 //    BM x BN is the block tile, BK the K-slice staged per iteration.
+//    perf/ experiments (defaults reproduce the original kernel):
+//      PAD  : padding on each row of the A tile (default 1). PAD = 0, 1, 4 trade
+//             store bank conflicts against vectorized (LDS.128) loads.
+//      MINB : minimum resident blocks per SM in __launch_bounds__ (default 1),
+//             which caps registers per thread at 64K / (MINB * threads).
+//    Building with -DBERT_NO_LAUNCH_BOUNDS drops __launch_bounds__ so that
+//    nvcc -maxrregcount alone controls the register budget.
 // ---------------------------------------------------------------------------
-template <int BM, int BN, int BK, int TM, int TN>
-__global__ void __launch_bounds__((BM / TM) * (BN / TN))
+#ifdef BERT_NO_LAUNCH_BOUNDS
+#define BERT_LAUNCH_BOUNDS(threads, minb)
+#else
+#define BERT_LAUNCH_BOUNDS(threads, minb) __launch_bounds__(threads, minb)
+#endif
+
+template <int BM, int BN, int BK, int TM, int TN, int PAD = 1, int MINB = 1>
+__global__ void BERT_LAUNCH_BOUNDS((BM / TM) * (BN / TN), MINB)
 gemm_regblock_kernel(const float* __restrict__ A, const float* __restrict__ W, const float* __restrict__ bias,
                      float* __restrict__ C, int M, int N, int K, int act) {
     constexpr int TX = BN / TN;  // threads along N
     constexpr int NT = (BM / TM) * TX;
-    __shared__ float As[BK][BM + 1];  // stored K-major so a thread's TM rows are contiguous
+    __shared__ float As[BK][BM + PAD];  // stored K-major so a thread's TM rows are contiguous
     __shared__ float Ws[BK][BN];
 
     const int tid = threadIdx.x;

@@ -1,5 +1,11 @@
 bin/
-results/
+# results/ is generated; keep only the perf study's tables, plots and SASS loop listings
+results/*
+!results/perf/
+results/perf/sass_*.txt
+results/perf/ncu/*.ncu-rep
+results/perf/ncu/*.log
+results/perf/ncu_probe.txt
 # Model weights and sentences come from the course project; not redistributed here.
 data/
 *.nsys-rep

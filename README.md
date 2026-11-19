@@ -111,6 +111,8 @@ With the FFN in 18-bit fixed point (`--fixed 18,16`), accuracy stays at **10/10*
 | FFN2, 1 sentence (32×128×512) | 183 | 79 | 81 | 57 | 307 |
 | FFN2, 256 sentences (8192×128×512) | 608 | 904 | 1,341 | **2,128 (71%)** | 2,978 |
 
+A later run on CUDA 13.0 (see [Compiler output vs. hardware counters](#compiler-output-vs-hardware-counters-perf)) measured `reg64` at 86–87% of cuBLAS for 64 sentences and 86% for 256. The 97% point did not reproduce, so treat 86–97% as the range across toolkits and runs.
+
 ### What the numbers show
 
 - **Register blocking pays off once the GPU is full.**
@@ -131,3 +133,33 @@ With the FFN in 18-bit fixed point (`--fixed 18,16`), accuracy stays at **10/10*
 
 - **Split-K or smaller tiles** for the N = 128, K = 512 layers at one sentence, so they launch more blocks than there are SMs.
 - **An integer-only fixed-point kernel** that quantizes the weights once, removing the per-element FP64 conversions.
+
+## Compiler output vs. hardware counters (`perf/`)
+
+A second study asks whether the generated SASS predicts what the hardware counters show. It ran on a Tesla T4 on Colab with CUDA 13.0 and Nsight Compute 2025.3. The predictions were written first, in [perf/TEST_PLAN.md](perf/TEST_PLAN.md). The full analysis, including the misses, is in [perf/WALKTHROUGH.md](perf/WALKTHROUGH.md), and the generated tables are in `results/perf/SUMMARY.md`.
+
+- **Static SASS × trip count = dynamic count.**
+  - FFMA and shared-load counts match Nsight Compute exactly for all 8 kernel variants (for example, 1,507,328 `LDS` for `reg64`).
+  - The static `STS` count overestimates, because the compiler emitted a second load path that never runs.
+- **The compiler beat my model.**
+  - With the A tile padded to 65 floats, I predicted scalar shared loads.
+  - ptxas instead issued `LDS.128` loads that start 4 bytes early and read the padding word. That gives 92 loads per k-tile instead of 128.
+- **Padding is a bank-conflict vs. vector-load trade-off.**
+
+  | A-tile padding | 0 | 1 | 4 |
+  |---|---|---|---|
+  | Measured wavefronts per warp per k-tile (my model gives the same numbers) | 164 | 116 | 108 |
+  | Time (µs) | 138 | 119 | 114 |
+
+  Padding 4 takes `reg64` from 86% to 90% of cuBLAS.
+- **Occupancy wasn't the limiter.**
+  - Going from 75% to 100% theoretical occupancy (via `__launch_bounds__` or `-maxrregcount`) changed time by ≤ 2%, because the load/store pipe was the bottleneck (67–87% busy, top stall `mio_throttle`).
+  - Spilling at 32 registers cost 19–23%.
+- **cuBLAS (`volta_sgemm_128x64_nn`) does more work per thread.**
+  - It keeps the FMA pipe 80% busy at 33% achieved occupancy, against 48% for my best kernel.
+  - It computes 64 outputs per thread to my 16. That's the next optimization.
+
+```bash
+ARCH=sm_75 ./perf/run_perf.sh        # or open perf/colab_perf.ipynb on Colab
+STAGES=3 ./perf/run_perf.sh          # rerun only the register sweep
+```
