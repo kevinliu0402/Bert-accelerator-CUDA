@@ -1,6 +1,6 @@
 # Bert-accelerator-CUDA
 
-This project runs the single-block BERT sentiment classifier from the CSEE 4868 System-on-Chip Platforms project (Columbia, Fall 2025) on an NVIDIA GPU with hand-written CUDA kernels. In the course project, the two feed-forward (FFN) layers ran on Catapult-HLS accelerators inside an ESP RISC-V SoC on a Xilinx VC707 FPGA. Here the whole model runs on the GPU, including those FFN layers in the project's own fixed-point format.
+This project runs the single-block BERT sentiment classifier from the CSEE 4868 System-on-Chip Platforms project (Columbia) on an NVIDIA GPU with hand-written CUDA kernels. In the course project, the two feed-forward (FFN) layers ran on Catapult-HLS accelerators inside an ESP RISC-V SoC on a Xilinx VC707 FPGA. Here the whole model runs on the GPU, including those FFN layers in the project's own fixed-point format.
 
 ## Model
 

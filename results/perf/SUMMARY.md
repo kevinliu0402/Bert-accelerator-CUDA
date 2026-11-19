@@ -6,7 +6,6 @@ Tesla T4, 7.5, 580.82.07, 1590 MHz, 70.00 W
 Cuda compilation tools, release 13.0, V13.0.88
 Build cuda_13.0.r13.0/compiler.36424714_0
 Version 2025.3.1.0 (build 36398880) (public-release)
-Thu Nov 19 10:54:15 PM UTC 2026
 ```
 
 ## 1. Compiler output and runtime, FFN1 at 64 sentences (M=2048, N=512, K=128)

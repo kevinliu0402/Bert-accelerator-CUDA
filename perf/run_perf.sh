@@ -20,7 +20,6 @@ say "0. system"
     nvidia-smi --query-gpu=name,compute_cap,driver_version,clocks.max.sm,power.limit --format=csv
     nvcc --version | tail -2
     command -v ncu >/dev/null && ncu --version | tail -1
-    date
 } | tee "$OUT/system.txt"
 
 say "1. default build: registers, spills, SASS"

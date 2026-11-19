@@ -106,7 +106,7 @@ Two method choices:
 
 ---
 
-## Part 6. Results: Tesla T4, CUDA 13.0, Colab (2026-11-19)
+## Part 6. Results: Tesla T4, CUDA 13.0, Colab
 
 Everything below is from `results/perf/` (generated tables in [SUMMARY.md](../results/perf/SUMMARY.md)). ncu = Nsight Compute 2025.3, one profiled launch per kernel, clocks unlocked.
 
