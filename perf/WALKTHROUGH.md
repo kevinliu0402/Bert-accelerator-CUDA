@@ -139,11 +139,11 @@ Full rerun: reg64 123 µs (86%), pad4 118 µs (89%), cuBLAS 105 µs. All kernels
 | P6 | cuBLAS `*sgemm*`, ≥128 regs, ≤25% occupancy, wins on ILP | `volta_sgemm_128x64_nn`, 122 regs, 50% theoretical / 32.8% achieved, **FMA pipe 80%** vs my best 48% | Direction ✓, numbers ✗ |
 
 ### Finding 1: the compiler was smarter than my model (P1a)
-With PAD = 1 the A-tile row is 65 floats = 260 B, so only every 4th row starts 16-byte aligned. I predicted four scalar loads per row. ptxas instead covered each row with the widest aligned loads it could, **including reading the padding word**:
+With PAD = 1 the A-tile row is 65 floats = 260 B, so only every 4th row starts 16-byte aligned. I predicted four scalar loads per row. ptxas instead covered each row with the widest aligned loads it could, **loading one neighboring word it doesn't need** so the access starts on a 16-byte boundary (for the first thread group that word is row 0's padding):
 
 ```
 kk=0 (offset 0):     LDS.U.128 [R28.X16]            ; aligned
-kk=1 (offset 260):   LDS.U.128 [R28.X16+0x100]      ; starts 4 B early: pad word + 3 floats
+kk=1 (offset 260):   LDS.U.128 [R28.X16+0x100]      ; starts 4 B early: 1 unneeded word + 3 floats
                      LDS.U     [R28.X16+0x110]      ; the 4th float
 kk=2 (offset 520):   LDS.U.64  [+0x208] , LDS.U.64 [+0x210]
 kk=3 (offset 780):   LDS.U     [+0x30c] , LDS.U.128 [+0x310]

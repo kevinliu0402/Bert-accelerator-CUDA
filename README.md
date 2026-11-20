@@ -143,7 +143,7 @@ A second study asks whether the generated SASS predicts what the hardware counte
   - The static `STS` count overestimates, because the compiler emitted a second load path that never runs.
 - **The compiler beat my model.**
   - With the A tile padded to 65 floats, I predicted scalar shared loads.
-  - ptxas instead issued `LDS.128` loads that start 4 bytes early and read the padding word. That gives 92 loads per k-tile instead of 128.
+  - ptxas instead issued aligned `LDS.128` loads that start 4 bytes early and discard one unneeded word. That gives 92 loads per k-tile instead of 128.
 - **Padding is a bank-conflict vs. vector-load trade-off.**
 
   | A-tile padding | 0 | 1 | 4 |
@@ -151,7 +151,7 @@ A second study asks whether the generated SASS predicts what the hardware counte
   | Measured wavefronts per warp per k-tile (my model gives the same numbers) | 164 | 116 | 108 |
   | Time (µs) | 138 | 119 | 114 |
 
-  Padding 4 takes `reg64` from 86% to 90% of cuBLAS.
+  Padding 4 takes `reg64` from 86% to 90% of cuBLAS. `perf/wavefront_model.py` computes these wavefront counts from the SASS and the bank addresses each warp writes, and checks them against the Nsight Compute counters.
 - **Occupancy wasn't the limiter.**
   - Going from 75% to 100% theoretical occupancy (via `__launch_bounds__` or `-maxrregcount`) changed time by ≤ 2%, because the load/store pipe was the bottleneck (67–87% busy, top stall `mio_throttle`).
   - Spilling at 32 registers cost 19–23%.
@@ -161,5 +161,6 @@ A second study asks whether the generated SASS predicts what the hardware counte
 
 ```bash
 ARCH=sm_75 ./perf/run_perf.sh        # or open perf/colab_perf.ipynb on Colab
+python3 perf/wavefront_model.py       # shared-memory wavefront model vs Nsight Compute
 STAGES=3 ./perf/run_perf.sh          # rerun only the register sweep
 ```
